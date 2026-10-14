@@ -2211,8 +2211,12 @@ async function cargarProductos() {
     document.getElementById('estado-conexion').innerHTML = '<span class="dot"></span> ' + txt;
     renderInventario();
   } catch (err) {
-    document.getElementById('estado-conexion-side').textContent = 'sin conexión';
-    document.getElementById('estado-conexion').innerHTML = '<span class="dot"></span> Sin conexión';
+    // V19: ya no se llama "Sin conexión" a cualquier fallo; se muestra el motivo real (y queda en la consola y en window.__ULTIMO_ERROR)
+    const m = String((err && err.message) || err || ''); window.__ULTIMO_ERROR = m; console.error('[iMotor] no se pudieron cargar los productos:', err);
+    const red = /Failed to fetch|Load failed|NetworkError|No se pudo conectar|sin internet/i.test(m) || !navigator.onLine;
+    document.getElementById('estado-conexion-side').textContent = red ? 'sin conexión' : 'error: ' + m.slice(0, 60);
+    document.getElementById('estado-conexion').innerHTML = '<span class="dot"></span> ' + (red ? 'Sin conexión' : 'Error del servidor');
+    document.getElementById('estado-conexion').title = m;
   }
 }
 
@@ -3996,7 +4000,7 @@ function netLost(err){if(rt)return;off=true;err=String(err||'');
   if(/No se pudo confirmar/i.test(err))setSys('on',WARN,'Revisa antes de repetir',err.slice(0,360));
   else if(/no es JSON/i.test(err))setSys('on',WARN,'El servidor no respondió bien','Google respondió con un error. Tus datos no se perdieron; intenta de nuevo en unos segundos.');
   else if(/sin internet/i.test(err)||!navigator.onLine)setSys('on',WARN,'Sin conexión a internet','Revisa tu red. Cuando vuelva, intentaremos reconectar.');
-  else setSys('on',WARN,'Conexión interrumpida','No podemos comunicarnos con Google Sheets en este momento. Tus datos no se perdieron.');
+  else setSys('on',WARN,'Conexión interrumpida','No podemos comunicarnos con Google Sheets en este momento. Tus datos no se perdieron. Detalle técnico: '+err.slice(0,180));
   $('x-sysR').style.display=''}
 function netOk(){if(!off)return;off=false;rt=false;setSys('on ok',CHK,'Conexión restablecida','Todo volvió a la normalidad.');setTimeout(()=>{if(!off)sy.className=''},1800)}
 async function reintentar(){if(rt)return;rt=true;setSys('on rt',ROT,'Reconectando…','Comprobando la conexión con Google Sheets.');
