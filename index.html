@@ -986,6 +986,12 @@ html[data-theme="dark"] .btn-primary:not(#login-entrar):hover{background:#33eaff
 
 /* Obs 5 · Código cromático financiero universal (+ verde / − rojo) */
 .x-in{color:var(--pos)!important}.x-out{color:var(--neg)!important}
+.fila-salida{background:rgba(225,29,72,.07);border-left:3px solid var(--neg)}
+html[data-theme="dark"] .fila-salida{background:rgba(251,113,133,.10)}
+/* Rol Socio: solo consulta. Se ocultan formularios y botones de escritura (el servidor además rechaza cualquier escritura). */
+body.rol-socio .lr-actions, body.rol-socio #inv-nuevo-btn, body.rol-socio [data-editp], body.rol-socio [data-delp], body.rol-socio #cp-lista .btn-mini,
+body.rol-socio .panel:has(#cg-guardar), body.rol-socio .panel:has(#cp-guardar), body.rol-socio .panel:has(#sc-guardar),
+body.rol-socio .inv-table th:last-child, body.rol-socio .inv-table td:last-child:not([colspan]){display:none !important}
 .x-amt{flex:none;white-space:nowrap;text-align:right;font-weight:600;padding-left:6px}
 #d-ventas-mes,#d-ventas-mes-2,#x-vper,#r-ventas-total,#cjr-entradas,#cj-ventas-totales,#cj-efectivo,#cj-yape{color:var(--pos)}
 #d-compras-mes,#d-compras-mes-2,#x-cper,#r-compras-total,#cjr-salidas{color:var(--neg)}
@@ -1410,8 +1416,12 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.qu
       <div class="topline"><h2>Compras y gastos</h2></div>
       <div class="panel">
         <div class="panel-body" style="padding:16px 18px;">
-          <p style="margin:0 0 12px;color:var(--text-dim);font-size:12.5px;">Si es mercadería (tiene producto), el stock sube automático. Si es un gasto, deja el producto vacío.</p>
-          <div class="search-box" style="margin-bottom:8px;"><input type="text" id="cg-search" placeholder="Buscar producto (o deja vacío si es un gasto)" autocomplete="off"></div>
+          <div class="tabs-mini" id="cg-modo-tabs">
+            <button type="button" class="tab-mini active" data-modo="compra">🛒 Compra de mercadería</button>
+            <button type="button" class="tab-mini" data-modo="gasto">🧾 Gasto</button>
+          </div>
+          <p id="cg-ayuda" style="margin:0 0 12px;color:var(--text-dim);font-size:12.5px;">Mercadería para vender: elige el producto y el stock sube automático (entra al FIFO).</p>
+          <div class="search-box" style="margin-bottom:8px;"><input type="text" id="cg-search" placeholder="Buscar producto" autocomplete="off"></div>
           <div class="search-results" id="cg-results"></div>
           <div id="cg-elegido" style="display:none;background:#f2fdff;border:1px solid var(--oil);border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:13px;justify-content:space-between;align-items:center;">
             <span id="cg-elegido-nombre"></span><button type="button" class="btn-link" id="cg-quitar">Quitar</button>
@@ -1508,6 +1518,11 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.qu
       <div class="panel">
         <div class="panel-head">Detalle de ventas</div>
         <div class="panel-body" style="padding:0;" id="cj-lista"><div class="empty-note">Cargando…</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head" style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><span>Salidas del período</span><span class="x-out" id="cj-salidas-total" style="font-weight:700;">—</span></div>
+        <div class="panel-body" style="padding:0;" id="cj-salidas-lista"><div class="empty-note">Cargando…</div></div>
       </div>
 
       <div class="panel">
@@ -1714,6 +1729,17 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.qu
       <div class="panel" style="margin-top:14px;"><div class="panel-head" id="cg-conc-titulo">Conciliación SUNAT</div>
         <div class="filtro-resumen" id="cg-conc-resumen" style="padding:10px 14px 0;">Usa el mes elegido arriba.</div>
         <div class="panel-body" style="padding:0;" id="cg-conciliacion"><div class="empty-note">Cargando…</div></div></div>
+
+      <div class="panel" style="margin-top:14px;"><div class="panel-head" id="ct-titulo">Contador de comprobantes</div>
+        <div class="cliente-row" style="padding:10px 14px 0;align-items:center;flex-wrap:wrap;">
+          <div class="tabs-mini" id="ct-tabs" style="margin-bottom:0;">
+            <button type="button" class="tab-mini active" data-ct="ventas">Ventas (boletas y facturas)</button>
+            <button type="button" class="tab-mini" data-ct="compras">Compras (facturas)</button>
+          </div>
+          <button type="button" class="btn-sm" id="ct-descargar" style="margin-left:auto;">⬇ Descargar Excel</button>
+        </div>
+        <div class="filtro-resumen" id="ct-resumen" style="padding:10px 14px 0;"></div>
+        <div class="panel-body" style="padding:0;" id="ct-lista"><div class="empty-note">Cargando…</div></div></div>
     </section>
   </main>
 </div>
@@ -3121,6 +3147,7 @@ document.getElementById('cg-quitar').addEventListener('click',()=>{
   document.getElementById('cg-search').style.display='block';
   document.getElementById('cg-cantidad-row').style.display='none';
   document.getElementById('cg-descripcion-row').style.display='flex';
+  aplicarModoCg_();
 });
 document.getElementById('cg-moneda').addEventListener('change', e=>{
   const esDolares = e.target.value==='Dolares';
@@ -3132,9 +3159,35 @@ document.getElementById('cg-tipomov').addEventListener('change', e=>{
   if (e.target.value === 'Bonificación') { montoInput.value = 0; montoInput.disabled = true; }
   else { montoInput.disabled = false; }
 });
+// Modo Compra de mercadería / Gasto. El gasto (compra para el funcionamiento del negocio) no lleva producto, cantidad ni FIFO.
+let CG_MODO = 'compra';
+function aplicarModoCg_(){
+  const g = CG_MODO === 'gasto', el = id => document.getElementById(id);
+  document.querySelectorAll('#cg-modo-tabs .tab-mini').forEach(b => b.classList.toggle('active', b.dataset.modo === CG_MODO));
+  el('cg-ayuda').textContent = g ? 'Gasto de funcionamiento (luz, alquiler, útiles, etc.): no es mercadería, no lleva stock ni FIFO. Sale de Caja según la forma de pago.'
+                                 : 'Mercadería para vender: elige el producto y el stock sube automático (entra al FIFO).';
+  if (g) {
+    productoCompraElegido = null; el('cg-elegido').style.display = 'none'; el('cg-search').style.display = 'none'; el('cg-results').innerHTML = '';
+    el('cg-tipomov-row').style.display = 'none'; el('cg-cantidad-row').style.display = 'none'; el('cg-descripcion-row').style.display = 'flex';
+    el('cg-tipomov').value = 'Compra'; el('cg-monto').disabled = false;
+  } else {
+    el('cg-search').style.display = productoCompraElegido ? 'none' : 'block'; el('cg-descripcion-row').style.display = 'none';
+    el('cg-tipomov-row').style.display = productoCompraElegido ? 'flex' : 'none'; el('cg-cantidad-row').style.display = productoCompraElegido ? 'flex' : 'none';
+  }
+}
+document.querySelectorAll('#cg-modo-tabs .tab-mini').forEach(b => b.addEventListener('click', () => { CG_MODO = b.dataset.modo; aplicarModoCg_(); }));
+// "Sin documento": se bloquean las casillas que no se usan (comprobante, moneda y tipos de cambio)
+function aplicarSinDocumentoCg_(){
+  const sin = document.getElementById('cg-tipodoc').value === 'Sin documento', cmp = document.getElementById('cg-comprobante'), mon = document.getElementById('cg-moneda');
+  cmp.disabled = sin; if (sin) cmp.value = ''; cmp.style.opacity = sin ? '.5' : '';
+  mon.disabled = sin; mon.style.opacity = sin ? '.5' : '';
+  if (sin && mon.value !== 'Soles') { mon.value = 'Soles'; mon.dispatchEvent(new Event('change')); }
+}
 document.getElementById('cg-tipodoc').addEventListener('change', e=>{
   document.getElementById('cg-docrelacionado-row').style.display = (e.target.value === 'Nota de Crédito') ? 'flex' : 'none';
+  aplicarSinDocumentoCg_();
 });
+aplicarModoCg_(); aplicarSinDocumentoCg_();
 
 // ---- Proveedor con búsqueda / autocompletado ----
 // La lista sale de las compras ya registradas (más recientes primero). Al elegir uno se prellenan su moneda y tipo de documento habituales.
@@ -3186,6 +3239,8 @@ document.getElementById('cg-guardar').addEventListener('click', async () => {
   const msg=document.getElementById('cg-msg'), btn=document.getElementById('cg-guardar');
   if (btn.disabled) return;
   const tipoMovimiento = productoCompraElegido ? document.getElementById('cg-tipomov').value : 'Gasto';
+  if (CG_MODO === 'compra' && !productoCompraElegido) { msg.textContent='Elige el producto de la compra (o cambia a "Gasto")'; msg.className='sale-msg err'; return; }
+  if (CG_MODO === 'gasto' && !document.getElementById('cg-descripcion').value.trim()) { msg.textContent='Escribe la descripción del gasto'; msg.className='sale-msg err'; return; }
   const monto=document.getElementById('cg-monto').value;
   if(monto===''&&tipoMovimiento!=='Bonificación'){msg.textContent='Falta el monto';msg.className='sale-msg err';return;}
   const body={ codigo: productoCompraElegido?productoCompraElegido.codigo:'', cantidad: numIn(document.getElementById('cg-cantidad').value)||0,
@@ -3228,6 +3283,7 @@ document.getElementById('cg-guardar').addEventListener('click', async () => {
     document.getElementById('cg-search').style.display='block';
     document.getElementById('cg-descripcion-row').style.display='flex';
     document.getElementById('cg-cantidad-row').style.display='none';
+    aplicarModoCg_();
     msg.textContent = '✓ Registrado correctamente' + (mantener ? ' — los datos de la factura quedaron listos para el siguiente producto.' : ''); msg.className='sale-msg ok';
     document.getElementById('cg-search').focus();
     await cargarProductos(); cargarHistorialCompras(); cargarProveedores();
@@ -3279,6 +3335,52 @@ function rangoDeMes(periodo){   // 'yyyy-MM' → primer y último día
   const [y,m] = periodo.split('-').map(Number);
   return { desde: periodo+'-01', hasta: periodo+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0') };
 }
+// ---- Contador de comprobantes (solo lectura): fecha · nombre · monto total, por mes ----
+let CT_TAB = 'ventas', CT_VENTAS = [], CT_COMPRAS = [], CT_PERIODO = '';
+function contadorVentas_(ventas){   // una boleta/factura = líneas del mismo día, cliente y tipo (la hoja no guarda serie/número de venta)
+  const g = {};
+  ventas.forEach(v => {
+    if (v.anulada || (v.tipoComprobante !== 'Boleta' && v.tipoComprobante !== 'Factura')) return;
+    const dia = String(v.fecha||'').slice(0,10), k = dia+'|'+(v.cliente||'')+'|'+v.tipoComprobante;
+    const x = g[k] || (g[k] = { fecha: v.fecha, nombre: v.cliente || 'Sin nombre', tipo: v.tipoComprobante, total: 0, lineas: 0 });
+    x.total += Number(v.subtotal)||0; x.lineas++;
+  });
+  return Object.values(g).sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
+}
+function contadorCompras_(compras){   // una fila por comprobante (las líneas de una misma factura se suman)
+  const g = {};
+  compras.forEach(c => {
+    if (!c.comprobante || c.tipoMovimiento === 'Anulado' || c.tipoDocumento === 'Sin documento') return;
+    const k = (c.llave || String(c.comprobante).toUpperCase().trim()), esNC = c.tipoDocumento === 'Nota de Crédito';
+    const x = g[k] || (g[k] = { fecha: c.fecha, nombre: c.proveedor || 'Sin proveedor', tipo: esNC ? 'Nota de Crédito' : 'Factura', comprobante: c.comprobante, total: 0, lineas: 0 });
+    x.total += Math.abs(Number(c.montoTotal)||0); x.lineas++;
+  });
+  Object.values(g).forEach(x => { if (x.tipo === 'Nota de Crédito') x.total = -x.total; });
+  return Object.values(g).sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
+}
+function renderContador_(){
+  const cont = document.getElementById('ct-lista'); if (!cont) return;
+  document.querySelectorAll('#ct-tabs .tab-mini').forEach(b => b.classList.toggle('active', b.dataset.ct === CT_TAB));
+  const filas = CT_TAB === 'ventas' ? contadorVentas_(CT_VENTAS) : contadorCompras_(CT_COMPRAS);
+  const total = filas.reduce((t,x)=>t+x.total,0);
+  document.getElementById('ct-resumen').textContent = filas.length ? `${filas.length} comprobante(s) · Total ${fmt(total)}` : '';
+  cont.innerHTML = filas.length ? filas.map(x => `<div class="list-row">
+      <div class="lr-main"><div class="lr-title">${esc(x.nombre)}</div>
+      <div class="lr-sub">${fechaCorta_(x.fecha)} · ${esc(x.tipo)}${x.comprobante?' · '+esc(x.comprobante):''}</div></div>
+      <div class="lr-total ${x.total<0?'x-out':''}">${fmt(x.total)}</div></div>`).join('') : '<div class="empty-note">Sin comprobantes en este período.</div>';
+}
+document.querySelectorAll('#ct-tabs .tab-mini').forEach(b => b.addEventListener('click', () => { CT_TAB = b.dataset.ct; renderContador_(); }));
+document.getElementById('ct-descargar').addEventListener('click', () => {
+  const filas = CT_TAB === 'ventas' ? contadorVentas_(CT_VENTAS) : contadorCompras_(CT_COMPRAS);
+  const q = t => '"' + String(t==null?'':t).replace(/"/g,'""') + '"';
+  const csv = '\ufeffFecha;Nombre;Tipo;Monto total\r\n' + filas.map(x => [String(x.fecha||'').slice(0,10), q(x.nombre), x.tipo, x.total.toFixed(2).replace('.',',')].join(';')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'comprobantes_' + CT_TAB + '_' + (CT_PERIODO||'mes') + '.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+});
+async function cargarContadorVentas_(periodo, etiqueta){
+  CT_PERIODO = periodo; document.getElementById('ct-titulo').textContent = 'Contador de comprobantes · ' + etiqueta;
+  try { const d = await api('ventas', rangoDeMes(periodo)); if (!d.ok) throw new Error(d.error); CT_VENTAS = d.ventas || []; renderContador_(); }
+  catch(e) { document.getElementById('ct-lista').innerHTML = '<div class="empty-note">No se pudo cargar: '+esc(e.message)+'</div>'; }
+}
 async function cargarConciliacion(periodo, etiqueta){
   const cont = document.getElementById('cg-conciliacion'); if (!cont) return;
   document.getElementById('cg-conc-titulo').textContent = 'Conciliación SUNAT · ' + etiqueta;
@@ -3286,6 +3388,7 @@ async function cargarConciliacion(periodo, etiqueta){
     const data = await api('compras', rangoDeMes(periodo));
     if (!data.ok) throw new Error(data.error);
     renderConciliacionSunat(data.compras);
+    CT_COMPRAS = data.compras || []; renderContador_();
   } catch(e) { cont.innerHTML = '<div class="empty-note">No se pudo cargar la conciliación: '+esc(e.message)+'</div>'; }
 }
 async function cargarHistorialCompras(){
@@ -3330,6 +3433,7 @@ document.getElementById('r-mes').addEventListener('change', () => cargarResumen(
 async function cargarResumen(){
   const sel = document.getElementById('r-mes');
   const periodo = sel.value;
+  cargarContadorVentas_(periodo, sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : periodo);
   cargarConciliacion(periodo, sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : periodo);   // no espera: se carga en paralelo
   const data=await api('resumen',{periodo});
   if(!data.ok)return; const r=data.resumen;
@@ -3402,7 +3506,7 @@ async function cargarCajaReal(){
     document.getElementById('cjr-saldo').textContent = fmt(r.saldo);
     const movs = data.cajaReal.movimientos || [];
     cont.innerHTML = movs.length ? movs.map(m => `
-      <div class="venta-row"><div><div class="who">${m.tipo==='entrada'?'⬆':'⬇'} ${esc(m.concepto||m.origen)} — ${esc(m.origen)}</div>
+      <div class="venta-row${m.tipo==='salida'?' fila-salida':''}"><div><div class="who">${m.tipo==='entrada'?'⬆':'⬇'} ${esc(m.concepto||m.origen)} — ${esc(m.origen)}</div>
       <div class="when">${esc(m.detalle||'')}${m.medio?' · '+esc(m.medio):''} · ${fechaCorta_(m.fecha)}</div></div>
       <div class="amt x-amt ${m.tipo==='entrada'?'x-in':'x-out'}">${m.tipo==='entrada'?'+':'-'} ${fmt(m.monto)}</div></div>
     `).join('') : '<div class="empty-note">Sin movimientos.</div>';
@@ -3561,6 +3665,18 @@ async function cargarCaja(){
       </div>
       <div class="lr-total x-in">+ ${fmt(v.total)}</div>
     </div>`).join('') : '<div class="empty-note">Sin ventas en este período.</div>';
+
+  // Salidas del período (compras/gastos pagados, compromisos, socios): filas en rojo
+  const sal = c.salidas || [];
+  document.getElementById('cj-salidas-total').textContent = sal.length ? '- ' + fmt(c.resumen.salidasTotal || 0) : '';
+  document.getElementById('cj-salidas-lista').innerHTML = sal.length ? sal.map(m => `
+    <div class="list-row fila-salida">
+      <div class="lr-main">
+        <div class="lr-title">${esc(m.concepto||m.origen)}</div>
+        <div class="lr-sub">${fechaCorta_(m.fecha)} · ${esc(m.origen)}${m.medio?' · '+esc(m.medio):''}${m.detalle?' · '+esc(m.detalle):''}</div>
+      </div>
+      <div class="lr-total x-out">- ${fmt(m.monto)}</div>
+    </div>`).join('') : '<div class="empty-note">Sin salidas en este período.</div>';
 
   // Cuadre del período
   document.getElementById('cj-cuadre-efectivo-reg').textContent = fmt(c.resumen.efectivo);
@@ -3826,6 +3942,9 @@ async function intentarLogin(clave) {
     // V19: el SERVIDOR decide quién puede ver costos y capas FIFO (imc_admin). Las secciones visibles siguen el selector de la pantalla de ingreso (por defecto Administrador), como en V18.
     sessionStorage.setItem('imc_admin', d.rol === 'admin' ? '1' : '');
     if (d.rol === 'admin') sessionStorage.setItem('imc_rol', 'admin');   // con la clave de administrador se entra siempre como administrador
+    // Clave de SOCIO: el servidor la limita a consulta (sin costos ni escritura); la pantalla queda fija en vista Socio y el selector no la cambia.
+    if (d.rol === 'socio') { sessionStorage.setItem('imc_rol', 'socio'); sessionStorage.setItem('imc_socio_real', '1'); }
+    else if (sessionStorage.getItem('imc_socio_real') === '1') { sessionStorage.removeItem('imc_socio_real'); sessionStorage.setItem('imc_rol', 'admin'); }
     mostrarApp();
   } catch (e) {
     err.textContent = 'No se pudo conectar. Intenta de nuevo.'; CLAVE = '';
@@ -4025,9 +4144,9 @@ const card=document.querySelector('.login-card'),idf=$('login-id');
 if(card&&idf){const sg=mk('<div class="x-seg" id="x-rseg"><i></i><button type="button" class="on" data-r="admin">Administrador</button><button type="button" data-r="socio">Socio</button></div>');idf.parentNode.parentNode.insertBefore(sg,idf.parentNode);
   sg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;sg.classList.toggle('s',b.dataset.r==='socio');sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sessionStorage.setItem('imc_rol',b.dataset.r)});
   if(sessionStorage.getItem('imc_rol')==='socio'){sg.classList.add('s');sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.r==='socio'))}}
-const SOC=['dashboard','socios','compromisos'];
-function rol(){return sessionStorage.getItem('imc_rol')||'admin'}
-function aplicarRol(){const r=rol();document.querySelectorAll('.nav-item,.bn-item,.mas-item').forEach(e=>{if(e.dataset.view)e.style.display=(r==='socio'&&!SOC.includes(e.dataset.view))?'none':''});
+const SOC=['dashboard','ventas','inventario','compras','caja','resumen','socios','compromisos'];   // Socio: Inicio, Ventas, Inventario, Compras, Caja, Resumen SUNAT, Socios y Próximos pagos
+function rol(){return sessionStorage.getItem('imc_socio_real')==='1'?'socio':(sessionStorage.getItem('imc_rol')||'admin')}
+function aplicarRol(){const r=rol();document.body.classList.toggle('rol-socio',r==='socio');document.querySelectorAll('.nav-item,.bn-item,.mas-item').forEach(e=>{if(e.dataset.view)e.style.display=(r==='socio'&&!SOC.includes(e.dataset.view))?'none':''});
   const id=(sessionStorage.getItem('imc_id')||'').trim();$('user-nm').textContent=id||(r==='socio'?'Socio':'Administrador');$('user-av').textContent=(id?id.slice(0,2):(r==='socio'?'SO':'AD')).toUpperCase()}
 aplicarRol();$('login-entrar').addEventListener('click',()=>setTimeout(aplicarRol,0));
 new MutationObserver(aplicarRol).observe($('app-screen'),{attributes:true,attributeFilter:['class']});
