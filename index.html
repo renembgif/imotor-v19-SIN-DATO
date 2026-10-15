@@ -3175,13 +3175,17 @@ function aplicarModoCg_(){
     el('cg-tipomov-row').style.display = productoCompraElegido ? 'flex' : 'none'; el('cg-cantidad-row').style.display = productoCompraElegido ? 'flex' : 'none';
   }
 }
-document.querySelectorAll('#cg-modo-tabs .tab-mini').forEach(b => b.addEventListener('click', () => { CG_MODO = b.dataset.modo; aplicarModoCg_(); }));
-// "Sin documento": se bloquean las casillas que no se usan (comprobante, moneda y tipos de cambio)
+document.querySelectorAll('#cg-modo-tabs .tab-mini').forEach(b => b.addEventListener('click', () => {
+  CG_MODO = b.dataset.modo; aplicarModoCg_();
+  const td = document.getElementById('cg-tipodoc'); td.value = (CG_MODO === 'gasto') ? 'Sin documento' : 'Factura'; td.dispatchEvent(new Event('change'));   // el gasto empieza sin documento; si tiene factura, elígela
+}));
+// "Sin documento": se OCULTAN las casillas que no se usan (N° de comprobante, moneda y tipos de cambio); la moneda queda en Soles
 function aplicarSinDocumentoCg_(){
-  const sin = document.getElementById('cg-tipodoc').value === 'Sin documento', cmp = document.getElementById('cg-comprobante'), mon = document.getElementById('cg-moneda');
-  cmp.disabled = sin; if (sin) cmp.value = ''; cmp.style.opacity = sin ? '.5' : '';
-  mon.disabled = sin; mon.style.opacity = sin ? '.5' : '';
-  if (sin && mon.value !== 'Soles') { mon.value = 'Soles'; mon.dispatchEvent(new Event('change')); }
+  const sin = document.getElementById('cg-tipodoc').value === 'Sin documento', el = id => document.getElementById(id);
+  el('cg-comprobante').style.display = sin ? 'none' : ''; if (sin) el('cg-comprobante').value = '';
+  el('cg-moneda').parentElement.style.display = sin ? 'none' : '';
+  if (sin) { el('cg-tcsunat-row').style.display = 'none'; if (el('cg-moneda').value !== 'Soles') { el('cg-moneda').value = 'Soles'; el('cg-moneda').dispatchEvent(new Event('change')); } }
+  else el('cg-moneda').dispatchEvent(new Event('change'));   // vuelve a mostrar el TC SUNAT solo si la moneda es dólares
 }
 document.getElementById('cg-tipodoc').addEventListener('change', e=>{
   document.getElementById('cg-docrelacionado-row').style.display = (e.target.value === 'Nota de Crédito') ? 'flex' : 'none';
