@@ -1168,6 +1168,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.qu
 </script>
 
 <style id="mejoras-visual-v19">
+#cg-comprobante.cg-sf,#cg-comprobante[readonly]{background:rgba(13,148,136,.10);color:#0f766e;font-weight:700;cursor:not-allowed}
+html[data-theme="dark"] #cg-comprobante.cg-sf,html[data-theme="dark"] #cg-comprobante[readonly]{background:rgba(19,78,74,.4);color:#5eead4}
 /* ===== Ocultar scrollbar sin perder scroll ===== */
 .no-scrollbar::-webkit-scrollbar{display:none}
 .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
@@ -2365,7 +2367,12 @@ async function refrescarTodo(){
 function refrescarSiViejo(seg){ if (CLAVE && Date.now()-ULT_REFRESCO > seg*1000) refrescarTodo(); }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState==='visible') refrescarSiViejo(20); });
 window.addEventListener('focus', () => refrescarSiViejo(20));
-['btn-refrescar','btn-refrescar-inv'].forEach(id => document.getElementById(id).addEventListener('click', refrescarTodo));
+// ↻ Actualizar: primero deja Compras y Ventas en orden cronológico (el servidor no escribe nada si ya está en orden) y luego relee todo.
+async function refrescarYOrdenar(){
+  if (CLAVE && sessionStorage.getItem('imc_socio_real') !== '1' && sessionStorage.getItem('imc_rol') !== 'socio') { try { await api(null, {}, 'POST', { accion: 'ordenarRegistros' }); } catch(e) {} }   // si falla, igual se actualiza
+  return refrescarTodo();
+}
+['btn-refrescar','btn-refrescar-inv'].forEach(id => document.getElementById(id).addEventListener('click', refrescarYOrdenar));
 
 // ---------------- NAVEGACIÓN ----------------
 function goView(name) {
@@ -3294,10 +3301,33 @@ document.querySelectorAll('#cg-modo-tabs .tab-mini').forEach(b => b.addEventList
   CG_MODO = b.dataset.modo; aplicarModoCg_();
   const td = document.getElementById('cg-tipodoc'); td.value = (CG_MODO === 'gasto') ? 'Sin documento' : 'Factura'; td.dispatchEvent(new Event('change'));   // el gasto empieza sin documento; si tiene factura, elígela
 }));
-// "Sin documento": se OCULTAN las casillas que no se usan (N° de comprobante, moneda y tipos de cambio); la moneda queda en Soles
+// Correlativo automático S/F-XX para "Sin documento": el N° de comprobante se completa solo (solo lectura).
+// Al cambiar a Factura / Boleta / Nota de Crédito se limpia y queda libre para escribir (ej. E001-594).
+let SF_SEQ = 0;
+async function siguienteSF_(){
+  try { const d = await api('siguienteSF'); if (d && d.ok && d.siguiente) return d.siguiente; } catch(e) {}      // 1) backend: lee todo el historial
+  const d = await api('compras', { desde: '2000-01-01', hasta: '2999-12-31' });                                   // 2) respaldo: historial completo por fechas
+  if (!d || !d.ok) throw new Error('sin datos');
+  let max = 0;
+  d.compras.forEach(c => { const m = /^\s*S\/F-(\d+)\s*$/i.exec(String(c.comprobante || '')); if (m) max = Math.max(max, parseInt(m[1], 10)); });
+  return 'S/F-' + String(max + 1).padStart(2, '0');
+}
+async function asignarCorrelativoSF_(){
+  const cc = document.getElementById('cg-comprobante');
+  if (/^S\/F-\d+$/i.test(cc.value)) return;                                  // ya tiene su número (p. ej. "mantener datos" de la compra anterior)
+  if (!CLAVE) return;
+  const mi = ++SF_SEQ; cc.value = ''; cc.placeholder = 'Calculando S/F…';
+  let sig = '';
+  try { sig = await siguienteSF_(); } catch(e) {}
+  if (mi !== SF_SEQ || document.getElementById('cg-tipodoc').value !== 'Sin documento') return;   // el usuario ya cambió de opción
+  if (sig) { cc.value = sig; cc.placeholder = ''; }
+  else { cc.readOnly = false; cc.classList.remove('cg-sf'); cc.placeholder = 'No se pudo calcular el S/F (sin conexión): escríbelo o reintenta'; }
+}
+// "Sin documento": el N° de comprobante se autocompleta (S/F-XX, solo lectura); se ocultan moneda y tipos de cambio; la moneda queda en Soles
 function aplicarSinDocumentoCg_(){
   const sin = document.getElementById('cg-tipodoc').value === 'Sin documento', el = id => document.getElementById(id);
-  el('cg-comprobante').style.display = sin ? 'none' : ''; if (sin) el('cg-comprobante').value = '';
+  const cc = el('cg-comprobante'); cc.style.display = ''; cc.readOnly = sin; cc.classList.toggle('cg-sf', sin);
+  if (sin) asignarCorrelativoSF_(); else { if (/^S\/F-/i.test(cc.value)) cc.value = ''; cc.placeholder = 'N° comprobante (ej. F532-0071772)'; }
   el('cg-moneda').parentElement.style.display = sin ? 'none' : '';
   if (sin) { el('cg-tcsunat-row').style.display = 'none'; if (el('cg-moneda').value !== 'Soles') { el('cg-moneda').value = 'Soles'; el('cg-moneda').dispatchEvent(new Event('change')); } }
   else el('cg-moneda').dispatchEvent(new Event('change'));   // vuelve a mostrar el TC SUNAT solo si la moneda es dólares
