@@ -4567,24 +4567,69 @@ $('cl-buscar-placa').addEventListener('input',e=>{Q=e.target.value.trim();$('cl-
 (function(){
   function esAdmin(){ return sessionStorage.getItem('imc_admin') === '1' && !!sessionStorage.getItem('imc_clave'); }
   function money(n){ return 'S/ ' + (Number(n)||0).toFixed(2); }
-  function ov(html){ let o=document.getElementById('fifo-ov'); if(!o){ o=document.createElement('div'); o.id='fifo-ov'; o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:24px 10px;overflow:auto'; document.body.appendChild(o); o.addEventListener('click',e=>{ if(e.target===o) o.remove(); }); }
-    o.innerHTML='<div style="background:#fff;color:#1a1a1a;border-radius:12px;max-width:900px;width:100%;padding:18px 20px;font-size:13px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:16px">Capas FIFO</b><button type="button" id="fifo-x" class="btn-sm">Cerrar</button></div>'+html+'</div>'; o.querySelector('#fifo-x').onclick=()=>o.remove(); }
+  const esc = t => String(t==null?'':t).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const FX_CSS = '<style>'+
+    '#fifo-ov .fx-wrap{color:#1f2937;font-size:13px;line-height:1.45}'+
+    '#fifo-ov .fx-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px 20px;margin-bottom:18px}'+
+    '#fifo-ov .fx-h{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;margin:0 0 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}'+
+    '#fifo-ov .fx-h span{font-weight:500;letter-spacing:0;text-transform:none;color:#9ca3af}'+
+    '#fifo-ov .fx-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;border:1px solid transparent}'+
+    '#fifo-ov .fx-ok{background:#ecfdf5;color:#047857;border-color:#a7f3d0}'+
+    '#fifo-ov .fx-warn{background:#fffbeb;color:#b45309;border-color:#fde68a}'+
+    '#fifo-ov .fx-err{background:#fef2f2;color:#b91c1c;border-color:#fecaca}'+
+    '#fifo-ov .fx-estado{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}'+
+    '#fifo-ov details.fx-acc{margin-top:14px;border-top:1px solid #f1f3f5;padding-top:12px}'+
+    '#fifo-ov details.fx-acc>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:8px;font-weight:600;color:#b45309;font-size:12.5px;padding:6px 12px;border:1px solid #fde68a;background:#fffbeb;border-radius:10px;user-select:none}'+
+    '#fifo-ov details.fx-acc>summary::-webkit-details-marker{display:none}'+
+    '#fifo-ov details.fx-acc>summary .fx-t-hide{display:none}'+
+    '#fifo-ov details.fx-acc[open]>summary .fx-t-show{display:none}'+
+    '#fifo-ov details.fx-acc[open]>summary .fx-t-hide{display:inline}'+
+    '#fifo-ov details.fx-acc>summary:after{content:"▾";font-size:11px;transition:transform .2s}'+
+    '#fifo-ov details.fx-acc[open]>summary:after{transform:rotate(180deg)}'+
+    '#fifo-ov .fx-warnlist{margin:12px 0 0;padding:0;list-style:none;max-height:180px;overflow:auto;display:flex;flex-direction:column;gap:6px}'+
+    '#fifo-ov .fx-warnlist li{background:#fffbeb;border:1px solid #fef3c7;border-radius:8px;padding:8px 12px;color:#92400e;font-size:12px}'+
+    '#fifo-ov .fx-errlist{margin:12px 0 0;padding:10px 12px 10px 28px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;color:#b91c1c;font-size:12px}'+
+    '#fifo-ov .fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;max-height:280px;overflow:auto;padding:2px}'+
+    '#fifo-ov .fx-cap{border:1px solid #e5e7eb;border-left:4px solid #06b6d4;border-radius:12px;padding:12px 14px;background:#fafafa}'+
+    '#fifo-ov .fx-cap b{font-size:13.5px}'+
+    '#fifo-ov .fx-cap small{display:block;color:#6b7280;font-size:11.5px;margin-top:2px}'+
+    '#fifo-ov .fx-cap .fx-kv{display:flex;justify-content:space-between;margin-top:10px;gap:10px}'+
+    '#fifo-ov .fx-cap .fx-kv div{font-size:11px;color:#6b7280}'+
+    '#fifo-ov .fx-cap .fx-kv strong{display:block;font-size:14px;color:#111827}'+
+    '#fifo-ov .fx-vacio{color:#6b7280;font-size:12.5px;padding:4px 2px}'+
+    '#fifo-ov .fx-scroll{overflow:auto;max-height:340px}'+
+    '#fifo-ov table.fx-t{width:100%;border-collapse:collapse;font-size:12.5px}'+
+    '#fifo-ov table.fx-t th{position:sticky;top:0;background:#fff;text-align:left;color:#6b7280;font-weight:600;font-size:11.5px;padding:8px 12px;border-bottom:1px solid #e5e7eb;white-space:nowrap}'+
+    '#fifo-ov table.fx-t td{padding:10px 12px;border-bottom:1px solid #f1f3f5;white-space:nowrap}'+
+    '#fifo-ov table.fx-t tr:last-child td{border-bottom:0}'+
+    '#fifo-ov table.fx-t .r{text-align:right}'+
+    '</style>';
+  function ov(html, sub){ let o=document.getElementById('fifo-ov'); if(!o){ o=document.createElement('div'); o.id='fifo-ov'; o.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(2px);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:24px 10px;overflow:auto'; document.body.appendChild(o); o.addEventListener('click',e=>{ if(e.target===o) o.remove(); }); }
+    o.innerHTML=FX_CSS+'<div class="fx-wrap" style="background:#f8fafc;color:#1f2937;border-radius:18px;max-width:920px;width:100%;padding:22px 24px;box-shadow:0 20px 50px rgba(0,0,0,.25)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px"><div><b style="font-size:17px">Capas FIFO</b>'+(sub?'<div style="font-size:12px;color:#6b7280;margin-top:2px">'+esc(sub)+'</div>':'')+'</div><button type="button" id="fifo-x" class="btn-sm">Cerrar</button></div>'+html+'</div>'; o.querySelector('#fifo-x').onclick=()=>o.remove(); }
   async function verCapas(){
     const cod = (prompt('Código del producto (vacío = todos):','')||'').trim();
     const d = await api('capas', cod?{producto:cod}:{}); if(!d.ok){ alert(d.error); return; }
     const v = await api('verificarFifo'); const ver = v.ok ? v.verificacion : {ok:false,issues:[],advertencias:[]};
-    const rows = d.capas.map(c=>'<tr><td>'+c.id+'</td><td>'+c.fecha+'</td><td>'+c.producto+'</td><td>'+c.origen+'</td><td>'+c.ref+'</td><td style="text-align:right">'+c.ingresada+'</td><td style="text-align:right">'+c.disponible+'</td><td style="text-align:right">'+money(c.costoUnit)+'</td><td>'+c.estado+'</td></tr>').join('');
-    const cons = d.consumos.slice(-60).reverse().map(k=>'<tr><td>'+k.fecha+'</td><td>'+k.tipo+'</td><td>'+k.ref+'</td><td>'+k.idCapa+'</td><td style="text-align:right">'+k.cantidad+'</td><td style="text-align:right">'+money(k.costo)+'</td><td>'+k.estado+'</td></tr>').join('');
-    const av = (ver.advertencias||[]).map(a=>'<li>'+a.tipo+': '+a.ref+' usó la capa '+a.capa+' (ingresó '+a.fechaCapa+') antes de su fecha '+a.fechaOperacion+'</li>').join('');
-    const is = (ver.issues||[]).map(a=>'<li>'+JSON.stringify(a)+'</li>').join('');
-    ov('<div id="fifo-estado" style="margin-bottom:8px">Verificación: <b>'+(ver.ok?'sin inconsistencias':'HAY INCONSISTENCIAS')+'</b> · advertencias de consumo anticipado: <b>'+((ver.advertencias||[]).length)+'</b></div>'+(is?'<ul style="color:#b00">'+is+'</ul>':'')+(av?'<ul style="color:#a60">'+av+'</ul>':'')+
-      '<div style="overflow:auto"><table id="fifo-capas" style="width:100%;border-collapse:collapse"><thead><tr><th>Capa</th><th>Fecha</th><th>Producto</th><th>Origen</th><th>Ref.</th><th>Ingresó</th><th>Disponible</th><th>Costo unit.</th><th>Estado</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-      '<b style="display:block;margin:12px 0 4px">Últimos consumos</b><div style="overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th>Fecha</th><th>Tipo</th><th>Operación</th><th>Capa</th><th>Cant.</th><th>Costo</th><th>Estado</th></tr></thead><tbody>'+cons+'</tbody></table></div>');
+    const activas = d.capas.filter(c=>c.estado==='ACTIVA' && Number(c.disponible)>0);
+    const tarjetas = activas.map(c=>'<div class="fx-cap"><b>'+esc(c.id)+'</b><small>'+esc(c.producto)+' · '+esc(c.origen)+(c.ref?' · '+esc(c.ref):'')+'</small><small>Ingreso: '+esc(c.fecha)+'</small><div class="fx-kv"><div>Disponible<strong>'+esc(c.disponible)+' un.</strong></div><div style="text-align:right">Costo unit.<strong>'+money(c.costoUnit)+'</strong></div></div></div>').join('');
+    const rows = d.capas.map(c=>'<tr><td>'+esc(c.id)+'</td><td>'+esc(c.fecha)+'</td><td>'+esc(c.producto)+'</td><td>'+esc(c.origen)+'</td><td>'+esc(c.ref)+'</td><td class="r">'+esc(c.ingresada)+'</td><td class="r">'+esc(c.disponible)+'</td><td class="r">'+money(c.costoUnit)+'</td><td>'+esc(c.estado)+'</td></tr>').join('');
+    const cons = d.consumos.slice(-60).reverse().map(k=>'<tr><td>'+esc(k.fecha)+'</td><td>'+esc(k.tipo)+'</td><td>'+esc(k.ref)+'</td><td>'+esc(k.idCapa)+'</td><td class="r">'+esc(k.cantidad)+'</td><td class="r">'+money(k.costo)+'</td><td>'+esc(k.estado)+'</td></tr>').join('');
+    const nAv = (ver.advertencias||[]).length;
+    const av = (ver.advertencias||[]).map(a=>'<li>'+esc(a.tipo)+': '+esc(a.ref)+' usó la capa '+esc(a.capa)+' (ingresó '+esc(a.fechaCapa)+') antes de su fecha '+esc(a.fechaOperacion)+'</li>').join('');
+    const is = (ver.issues||[]).map(a=>'<li>'+esc(JSON.stringify(a))+'</li>').join('');
+    const estado = '<div class="fx-card"><div class="fx-estado"><div id="fifo-estado">Verificación: <b>'+(ver.ok?'sin inconsistencias':'HAY INCONSISTENCIAS')+'</b> · advertencias de consumo anticipado: <b>'+nAv+'</b></div>'+
+        '<span class="fx-badge '+(ver.ok?'fx-ok':'fx-err')+'">'+(ver.ok?'Todo en orden':'Revisar')+'</span></div>'+
+        (is?'<ul class="fx-errlist">'+is+'</ul>':'')+
+        (av?'<details class="fx-acc"><summary><span class="fx-t-show">Ver advertencias ('+nAv+')</span><span class="fx-t-hide">Ocultar advertencias</span></summary><ul class="fx-warnlist">'+av+'</ul></details>':'')+'</div>';
+    ov(estado+
+      '<div class="fx-card"><div class="fx-h">Capas activas <span>'+activas.length+' con stock disponible</span></div>'+(tarjetas?'<div class="fx-grid">'+tarjetas+'</div>':'<div class="fx-vacio">No hay capas con stock disponible.</div>')+'</div>'+
+      '<div class="fx-card"><div class="fx-h">Detalle de capas <span>'+d.capas.length+' en total</span></div><div class="fx-scroll"><table id="fifo-capas" class="fx-t"><thead><tr><th>Capa</th><th>Fecha</th><th>Producto</th><th>Origen</th><th>Ref.</th><th class="r">Ingresó</th><th class="r">Disponible</th><th class="r">Costo unit.</th><th>Estado</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'+
+      '<div class="fx-card" style="margin-bottom:0"><div class="fx-h">Últimos consumos <span>Historial reciente</span></div><div class="fx-scroll"><table class="fx-t"><thead><tr><th>Fecha</th><th>Tipo</th><th>Operación</th><th>Capa</th><th class="r">Cant.</th><th class="r">Costo</th><th>Estado</th></tr></thead><tbody>'+cons+'</tbody></table></div></div>', cod?('Producto '+cod):'Todos los productos');
   }
   async function ajustar(){
-    const cod=(prompt('Código del producto a ajustar:','')||'').trim(); if(!cod) return;
-    const t=(prompt('Escribe la cantidad a SUMAR o RESTAR (ej. 3 ó -2), o "=15" para dejar el stock real en 15:','')||'').trim(); if(!t) return;
-    const motivo=(prompt('Motivo del ajuste (obligatorio):','')||'').trim(); if(!motivo) return;
+    const cod=(prompt('AJUSTE DE STOCK\n\nCódigo del producto (ej. P050):','')||'').trim(); if(!cod) return;
+    const t=(prompt('¿Cuánto ajustar?\n\n  -1  →  saca 1 unidad (regalo, merma, pérdida)\n   3   →  suma 3 unidades\n  =15 →  deja el stock real en 15','')||'').trim(); if(!t) return;
+    const motivo=(prompt('Motivo (obligatorio). Ej.: Obsequio marketing - compartir 24/10/2026','')||'').trim(); if(!motivo) return;
     const body={accion:'ajustarStock',codigo:cod,motivo}; if(t[0]==='=') body.stockReal=Number(t.slice(1)); else body.cantidad=Number(t);
     const d=await api(null,{}, 'POST', body); if(!d.ok){ alert('No se pudo ajustar: '+d.error); return; } alert('Stock ajustado. Stock actual: '+d.stockActual); if(typeof cargarProductos==='function') cargarProductos();
   }
