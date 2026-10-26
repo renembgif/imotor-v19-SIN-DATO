@@ -3326,8 +3326,9 @@ async function asignarCorrelativoSF_(){
 // "Sin documento": el N° de comprobante se autocompleta (S/F-XX, solo lectura); se ocultan moneda y tipos de cambio; la moneda queda en Soles
 function aplicarSinDocumentoCg_(){
   const sin = document.getElementById('cg-tipodoc').value === 'Sin documento', el = id => document.getElementById(id);
-  const cc = el('cg-comprobante'); cc.style.display = ''; cc.readOnly = sin; cc.classList.toggle('cg-sf', sin);
-  if (sin) asignarCorrelativoSF_(); else { if (/^S\/F-/i.test(cc.value)) cc.value = ''; cc.placeholder = 'N° comprobante (ej. F532-0071772)'; }
+  const cc = el('cg-comprobante'), conSF = sin && CG_MODO === 'compra';   // S/F-XX solo para mercadería sin documento (ej. ATF); un gasto sin documento (suncho, alquiler) queda vacío
+  cc.style.display = ''; cc.readOnly = conSF; cc.classList.toggle('cg-sf', conSF);
+  if (conSF) asignarCorrelativoSF_(); else { if (/^S\/F-/i.test(cc.value)) cc.value = ''; cc.placeholder = sin ? 'Sin comprobante (opcional)' : 'N° comprobante (ej. F532-0071772)'; }
   el('cg-moneda').parentElement.style.display = sin ? 'none' : '';
   if (sin) { el('cg-tcsunat-row').style.display = 'none'; if (el('cg-moneda').value !== 'Soles') { el('cg-moneda').value = 'Soles'; el('cg-moneda').dispatchEvent(new Event('change')); } }
   else el('cg-moneda').dispatchEvent(new Event('change'));   // vuelve a mostrar el TC SUNAT solo si la moneda es dólares
@@ -3422,7 +3423,7 @@ document.getElementById('cg-guardar').addEventListener('click', async () => {
     if (!mantener) {
       document.getElementById('cg-fecha').value = hoyISO();
       document.getElementById('cg-moneda').value='Soles'; document.getElementById('cg-moneda').dispatchEvent(new Event('change'));
-      document.getElementById('cg-tipodoc').value='Factura'; document.getElementById('cg-tipodoc').dispatchEvent(new Event('change'));
+      document.getElementById('cg-tipodoc').value=(CG_MODO==='gasto')?'Sin documento':'Factura'; document.getElementById('cg-tipodoc').dispatchEvent(new Event('change'));
     }
     document.getElementById('cg-tipomov').value='Compra';
     document.getElementById('cg-monto').disabled=false;
