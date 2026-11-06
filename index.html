@@ -207,6 +207,11 @@ html.login-abierto, html.login-abierto body{ background:var(--graphite); }
 
 .venta-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 18px; font-size:13px; }
 .venta-row:not(:last-child){ border-bottom:1px solid #f0eee7; }
+.doc-grp{ border-bottom:1px solid #f0eee7; }
+.doc-grp>summary{ cursor:pointer; list-style:none; }
+.doc-grp>summary::-webkit-details-marker{ display:none; }
+.doc-grp .doc-lines{ background:#fafaf8; border-left:3px solid #0a8f88; margin-left:14px; }
+.doc-grp[open]>summary{ background:#f6f9f8; }
 .venta-row .who{ font-weight:600; }
 .venta-row .when{ color:var(--text-dim); font-size:11.5px; }
 .venta-row .amt{ font-weight:800; font-family:var(--font-mono); }
@@ -1789,7 +1794,12 @@ html body .view.active.animate-pop-fast{animation:popFast .28s cubic-bezier(.2,.
             <div class="sc-hl-label" id="r-hl-label">Saldo a favor / crédito fiscal</div>
             <div class="sc-hl-value" id="r-hl-value">S/ 0.00</div>
           </div>
-          <div class="sc-sub" style="margin-top:10px;"><span>Renta RER</span><b id="r-rer-2">S/0</b></div>
+          <div class="sc-sub" style="margin-top:10px;"><span>IGV del mes</span><b id="r-igvmes">S/0</b></div>
+          <div class="sc-sub"><span>Crédito anterior</span><b id="r-cred-ant">S/0</b></div>
+          <div class="sc-sub"><span>IGV a pagar</span><b id="r-igv-neto">S/0</b></div>
+          <div class="sc-sub"><span>Renta RER (1.5%)</span><b id="r-rer-2">S/0</b></div>
+          <div class="sc-sub"><span>Crédito que pasa al mes siguiente</span><b id="r-cred-fin">S/0</b></div>
+          <div class="sc-note" id="r-acu-nota"></div>
         </div>
         <div class="stat-card">
           <div class="sc-head"><div class="sc-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5.5 4 3.5 8-9"/><path d="M15 6h5v5"/></svg></div><div class="sc-label">Resultado del periodo</div></div>
@@ -1797,6 +1807,17 @@ html body .view.active.animate-pop-fast{animation:popFast .28s cubic-bezier(.2,.
           <div class="sc-note">Este indicador no representa necesariamente la ganancia real del negocio, ya que las compras pueden incluir mercadería que permanece en inventario.</div>
         </div>
       </div>
+      <div class="panel" id="r-acu-panel" style="margin-top:14px;display:none;"><div class="panel-head">Acumulado de IGV (crédito fiscal)</div>
+        <div class="panel-body" style="padding:14px;display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:12.5px;color:#4b5563;line-height:1.5;">El IGV de cada mes se compensa con el crédito fiscal de los meses anteriores. Si ya declaraste meses atrás, indica desde qué mes quieres acumular y el crédito que arrastraste en tu última declaración. La renta del 1.5% se paga aparte: no se compensa con el crédito.</div>
+          <div class="cliente-row" style="padding:0;flex-wrap:wrap;">
+            <label style="flex:1;min-width:160px;font-size:12px;color:#6b7280;">Acumular desde (mes)<input type="month" id="r-cfg-inicio" style="width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;"></label>
+            <label style="flex:1;min-width:160px;font-size:12px;color:#6b7280;">Crédito fiscal inicial (S/)<input type="number" step="0.01" min="0" id="r-cfg-cred" placeholder="0.00" style="width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;"></label>
+          </div>
+          <button class="btn-primary" id="r-cfg-guardar" style="width:auto;padding:10px 20px;">Guardar y recalcular</button>
+          <div class="sale-msg" id="r-cfg-msg"></div>
+        </div></div>
+
       <div class="panel" style="margin-top:14px;"><div class="panel-head" id="cg-conc-titulo">Conciliación SUNAT</div>
         <div class="filtro-resumen" id="cg-conc-resumen" style="padding:10px 14px 0;">Usa el mes elegido arriba.</div>
         <div class="panel-body" style="padding:0;" id="cg-conciliacion"><div class="empty-note">Cargando…</div></div></div>
@@ -3130,19 +3151,30 @@ async function generarYCompartirSticker(servicio){
 
 
 // ---------------- VENTAS (historial) ----------------
-async function cargarVentasHistorial(){
-  const cont=document.getElementById('vh-list'), res=document.getElementById('vh-resumen');
-  try {
-    const data=await api('ventas', FILTRO_VENTAS.params());
-    if(!data.ok) throw new Error(data.error);
-    // más recientes primero POR FECHA de la venta (una venta de ayer registrada hoy se ubica en su día)
-    VENTAS_HIST = data.ventas.slice().sort((a,b)=> (new Date(b.fecha)-new Date(a.fecha)) || (b.fila-a.fila));
-    const validas = VENTAS_HIST.filter(v=>v.estadoPago!=='Anulado');
-    res.textContent = VENTAS_HIST.length ? `${VENTAS_HIST.length} venta(s) · Total ${fmt(validas.reduce((t,v)=>t+(Number(v.subtotal)||0),0))}` + (VENTAS_HIST.length!==validas.length?` (sin contar ${VENTAS_HIST.length-validas.length} anulada/s)`:'') : '';
-    cont.innerHTML=VENTAS_HIST.length?VENTAS_HIST.map(v=>{
-      const desc=Number(v.descuentoUnit)||0, aj=Number(v.ajusteUnit)||0;
-      const detPrecio = (desc||aj) ? `<div class="det-precio">Precio ${fmt(v.precioVentaNormal)}${desc?` − desc. ${fmt(desc)}`:''}${aj?` ${aj>0?'+':'−'} ajuste ${fmt(Math.abs(aj))}`:''} = ${fmt(v.precioFinalUnit)} c/u</div>` : '';
-      return `
+// ---------- Documentos: varias líneas de una misma venta / factura se muestran juntas ----------
+let DOCS_V = [], DOCS_C = [];
+function agruparVentas_(lista){
+  const iso = v => v.fecha ? isoLocal(new Date(v.fecha)) : '';
+  const orden = lista.slice().sort((a,b)=>a.fila-b.fila), grupos = []; let g = null;
+  orden.forEach(v => {
+    const k = [iso(v), v.hora||'', v.cliente||'', v.tipoComprobante||'', v.metodoPago||''].join('|');
+    if (g && v.hora && g.k === k && v.fila === g.lineas[g.lineas.length-1].fila + 1) g.lineas.push(v); else { g = { k, lineas:[v] }; grupos.push(g); }
+  });
+  return grupos.sort((a,b)=> (new Date(b.lineas[0].fecha)-new Date(a.lineas[0].fecha)) || (b.lineas[b.lineas.length-1].fila - a.lineas[a.lineas.length-1].fila));
+}
+function agruparCompras_(lista){
+  const grupos = [], porLlave = {};
+  lista.forEach(c => {
+    const k = c.llave ? String(c.llave) + '|' + String(c.proveedor||'').trim().toUpperCase() : '';
+    if (k && porLlave[k]) porLlave[k].lineas.push(c); else { const g = { k, lineas:[c] }; grupos.push(g); if (k) porLlave[k] = g; }
+  });
+  grupos.forEach(g => g.lineas.sort((a,b)=>a.fila-b.fila));
+  return grupos;
+}
+function filaVentaHtml_(v){
+  const desc=Number(v.descuentoUnit)||0, aj=Number(v.ajusteUnit)||0;
+  const detPrecio = (desc||aj) ? `<div class="det-precio">Precio ${fmt(v.precioVentaNormal)}${desc?` − desc. ${fmt(desc)}`:''}${aj?` ${aj>0?'+':'−'} ajuste ${fmt(Math.abs(aj))}`:''} = ${fmt(v.precioFinalUnit)} c/u</div>` : '';
+  return `
     <div class="list-row">
       <div class="lr-main">
         <div class="lr-title">${esc(v.producto)} ${v.estadoPago==='Pendiente'?'<span style="color:#c0392b;font-size:11px;">(Pendiente)</span>':''}${v.estadoPago==='Anulado'?'<span class="badge-anulado">ANULADO</span>':''}</div>
@@ -3154,7 +3186,115 @@ async function cargarVentasHistorial(){
         <button class="btn-sm" data-anularv="${v.fila}">Anular</button>
         <button class="btn-sm-danger" data-delv="${v.fila}">Eliminar</button>
       </div>
-    </div>`; }).join(''):'<div class="empty-note">Sin ventas en este período.</div>';
+    </div>`;
+}
+function docVentaHtml_(g, gi){
+  const vivas = g.lineas.filter(v=>v.estadoPago!=='Anulado'), t0 = g.lineas[0];
+  const total = vivas.reduce((t,v)=>t+(Number(v.subtotal)||0),0), todasAn = !vivas.length, pend = vivas.some(v=>v.estadoPago==='Pendiente');
+  return `<details class="doc-grp"><summary class="list-row"><div class="lr-main"><div class="lr-title">Venta de ${g.lineas.length} productos · ${esc(t0.cliente||'')} ${pend?'<span style="color:#c0392b;font-size:11px;">(Pendiente)</span>':''}${todasAn?'<span class="badge-anulado">ANULADO</span>':''}</div>
+    <div class="lr-sub">${new Date(t0.fecha).toLocaleDateString('es-PE')}${t0.hora?' · '+esc(t0.hora):''} · ${esc(t0.tipoComprobante||'')} · ${esc(t0.metodoPago||'')} · ▸ toca para ver los ítems</div></div>
+    <div class="lr-total${todasAn?'':' x-in'}">${todasAn?'':'+ '}${fmt(total)}</div>
+    <div class="lr-actions">${todasAn?'':`<button class="btn-sm" data-docv-edit="${gi}">Editar documento</button><button class="btn-sm" data-docv-anular="${gi}">Anular documento</button>`}</div></summary>
+    <div class="doc-lines">${g.lineas.map(filaVentaHtml_).join('')}</div></details>`;
+}
+function filaCompraHtml_(c){
+  return `
+    <div class="list-row">
+      <div class="lr-main">
+        <div class="lr-title">${esc(c.producto||c.descripcion)} ${c.tipoMovimiento==='Anulado'?'<span class="badge-anulado">ANULADO</span>':''}</div>
+        <div class="lr-sub">${new Date(c.fecha).toLocaleDateString('es-PE')} · ${esc(c.proveedor||'')}${c.comprobante?' · '+esc(c.comprobante):''}</div>
+      </div>
+      <div class="lr-total${(c.tipoMovimiento==='Anulado'||!Number(c.montoTotal))?'':' x-out'}">${(c.tipoMovimiento==='Anulado'||!Number(c.montoTotal))?'':'- '}${fmt(c.montoTotal)}</div>
+      <div class="lr-actions">
+        <button class="btn-sm" data-editc="${c.fila}">Editar</button>
+        <button class="btn-sm" data-anularc="${c.fila}">Anular</button>
+        <button class="btn-sm-danger" data-delc="${c.fila}">Eliminar</button>
+      </div>
+    </div>`;
+}
+function docCompraHtml_(g, gi){
+  const vivas = g.lineas.filter(c=>c.tipoMovimiento!=='Anulado'), t0 = g.lineas[0];
+  const total = vivas.reduce((t,c)=>t+(Number(c.montoTotal)||0),0), todasAn = !vivas.length;
+  return `<details class="doc-grp"><summary class="list-row"><div class="lr-main"><div class="lr-title">${esc(t0.comprobante||'Documento')} · ${g.lineas.length} líneas ${todasAn?'<span class="badge-anulado">ANULADO</span>':''}</div>
+    <div class="lr-sub">${new Date(t0.fecha).toLocaleDateString('es-PE')} · ${esc(t0.proveedor||'')} · ▸ toca para ver las líneas</div></div>
+    <div class="lr-total${todasAn||!total?'':' x-out'}">${todasAn||!total?'':'- '}${fmt(total)}</div>
+    <div class="lr-actions">${todasAn?'':`<button class="btn-sm" data-docc-edit="${gi}">Editar documento</button><button class="btn-sm" data-docc-anular="${gi}">Anular documento</button>`}</div></summary>
+    <div class="doc-lines">${g.lineas.map(filaCompraHtml_).join('')}</div></details>`;
+}
+const campoDoc_ = 'padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;width:100%';
+const selDoc_ = (id, etiqueta, actual, opciones) => '<label style="font-size:12px;color:#6b7280">'+etiqueta+'<select id="'+id+'" style="'+campoDoc_+';margin-top:4px"><option value="">Sin cambios'+(actual?' (actual: '+esc(actual)+')':'')+'</option>'+opciones.map(o=>'<option>'+esc(o)+'</option>').join('')+'</select></label>';
+const unico_ = (arr) => { const s = new Set(arr); return s.size === 1 ? [...s][0] : ''; };
+async function recargarDocs_(tipo){ if (tipo==='venta') { await cargarVentasHistorial(); await cargarProductos(); } else { await cargarHistorialCompras(); await cargarProductos(); } }
+function abrirEditarDocVenta_(g){
+  const vivas = g.lineas.filter(v=>v.estadoPago!=='Anulado'); if (!vivas.length) return;
+  const iso = v => isoLocal(new Date(v.fecha));
+  const fAct = unico_(vivas.map(iso)), cAct = unico_(vivas.map(v=>v.cliente||''));
+  scDialog_('Editar venta completa ('+vivas.length+' productos)',
+    '<div style="font-size:12.5px;color:#4b5563;line-height:1.5">Llena solo lo que quieras cambiar: se aplica a todos los productos de esta venta. Lo demás queda igual.</div>'+
+    '<label style="font-size:12px;color:#6b7280">Fecha'+(fAct?' (actual: '+fechaCorta_(fAct)+')':' (hay fechas distintas)')+'<input type="date" id="dmv-fecha" max="'+hoyISO()+'" style="'+campoDoc_+';margin-top:4px"></label>'+
+    '<label style="font-size:12px;color:#6b7280">Cliente / Mecánico<input type="text" id="dmv-cliente" placeholder="'+escA_(cAct||'(varios)')+'" style="'+campoDoc_+';margin-top:4px"></label>'+
+    selDoc_('dmv-estado','Estado de pago',unico_(vivas.map(v=>v.estadoPago)),['Cobrado','Pendiente'])+
+    selDoc_('dmv-comp','Tipo de comprobante',unico_(vivas.map(v=>v.tipoComprobante)),['Nota de Venta / Sin Comprobante','Boleta','Factura'])+
+    selDoc_('dmv-metodo','Método de pago',unico_(vivas.map(v=>v.metodoPago)),['Efectivo','Yape','Transferencia']),
+    'Guardar en todos',
+    async o => {
+      const cambios = {}, put = (k,id) => { const v = o.querySelector(id).value.trim(); if (v) cambios[k] = v; };
+      put('fecha','#dmv-fecha'); put('cliente','#dmv-cliente'); put('estadoPago','#dmv-estado'); put('tipoComprobante','#dmv-comp'); put('metodoPago','#dmv-metodo');
+      if (!Object.keys(cambios).length) throw new Error('Indica al menos un cambio.');
+      const lineas = vivas.map(v => ({ fila:v.fila, huella:v.huella, fecha:iso(v), codigo:v.codigo, cantidad:v.cantidad, descuentoUnit:v.descuentoUnit||0, ajusteUnit:v.ajusteUnit||0, cliente:v.cliente, estadoPago:v.estadoPago, tipoComprobante:v.tipoComprobante, metodoPago:v.metodoPago }));
+      const d = await api(null,{},'POST',{ accion:'editarDocumentoVenta', lineas, cambios }); if (!d.ok) throw new Error(d.error);
+      await recargarDocs_('venta');
+    });
+}
+function abrirEditarDocCompra_(g){
+  const vivas = g.lineas.filter(c=>c.tipoMovimiento!=='Anulado'); if (!vivas.length) return;
+  const iso = c => isoLocal(new Date(c.fecha));
+  const fAct = unico_(vivas.map(iso)), pAct = unico_(vivas.map(c=>c.proveedor||'')), nAct = unico_(vivas.map(c=>c.comprobante||''));
+  scDialog_('Editar factura / documento ('+vivas.length+' líneas)',
+    '<div style="font-size:12.5px;color:#4b5563;line-height:1.5">Llena solo lo que quieras cambiar: se aplica a todas las líneas de este documento. Lo demás queda igual.</div>'+
+    '<label style="font-size:12px;color:#6b7280">Fecha'+(fAct?' (actual: '+fechaCorta_(fAct)+')':' (hay fechas distintas)')+'<input type="date" id="dmc-fecha" style="'+campoDoc_+';margin-top:4px"></label>'+
+    '<label style="font-size:12px;color:#6b7280">Proveedor<input type="text" id="dmc-proveedor" placeholder="'+escA_(pAct||'(varios)')+'" style="'+campoDoc_+';margin-top:4px"></label>'+
+    '<label style="font-size:12px;color:#6b7280">N° de comprobante<input type="text" id="dmc-comprobante" placeholder="'+escA_(nAct||'(varios)')+'" style="'+campoDoc_+';margin-top:4px"></label>'+
+    selDoc_('dmc-tipodoc','Tipo de documento',unico_(vivas.map(c=>c.tipoDocumento)),['Factura','Nota de Crédito','Sin documento'])+
+    selDoc_('dmc-forma','Forma de pago',unico_(vivas.map(c=>c.formaPago)),['Efectivo','Yape','Transferencia','Crédito Proveedor','Socio'])+
+    '<div id="dmc-socio-wrap" style="display:none"><input type="text" id="dmc-socio" placeholder="¿Qué socio pagó?" style="'+campoDoc_+'"></div>'+
+    '<div id="dmc-plazo-wrap" style="display:none"><div style="font-size:12px;color:#6b7280;margin-bottom:4px">Plazo de pago</div>'+plazoHtml_('dmc', true)+'</div>',
+    'Guardar en todas',
+    async o => {
+      const cambios = {}, put = (k,id) => { const v = o.querySelector(id).value.trim(); if (v) cambios[k] = v; };
+      put('fecha','#dmc-fecha'); put('proveedor','#dmc-proveedor'); put('comprobante','#dmc-comprobante'); put('tipoDocumento','#dmc-tipodoc'); put('formaPago','#dmc-forma');
+      if (cambios.formaPago === 'Socio') { put('socio','#dmc-socio'); if (!cambios.socio) throw new Error('Indica qué socio pagó.'); }
+      if (cambios.formaPago === 'Socio' || cambios.formaPago === 'Crédito Proveedor') { const pz = leerPlazo_('dmc'); if (!pz) throw new Error('Completa el plazo de pago (número de días o fecha).'); Object.assign(cambios, pz); }
+      if (!Object.keys(cambios).length) throw new Error('Indica al menos un cambio.');
+      const lineas = vivas.map(c => ({ fila:c.fila, huella:c.huella, fecha:iso(c), codigo:c.codigo||'', cantidad:c.cantidad, descripcion:c.descripcion||'', proveedor:c.proveedor||'', tipoDocumento:c.tipoDocumento, documentoRelacionado:c.documentoRelacionado||'', comprobante:c.comprobante||'', moneda:c.moneda, tipoCambio:c.tipoCambio||1, tcSunat:c.tcSunat||'', montoOriginal:c.montoOriginal, tipoMovimiento:c.tipoMovimiento, formaPago:c.formaPago, socio:c.socio||'' }));
+      const d = await api(null,{},'POST',{ accion:'editarDocumentoCompra', lineas, cambios }); if (!d.ok) throw new Error(d.error);
+      await recargarDocs_('compra');
+    });
+  const dlg = document.getElementById('sc-dlg'), fp = dlg.querySelector('#dmc-forma');
+  const upd = () => { dlg.querySelector('#dmc-socio-wrap').style.display = fp.value==='Socio' ? 'block' : 'none'; dlg.querySelector('#dmc-plazo-wrap').style.display = (fp.value==='Socio'||fp.value==='Crédito Proveedor') ? 'block' : 'none'; };
+  fp.addEventListener('change', upd); upd(); bindPlazo_('dmc');
+}
+async function anularDocumento_(tipo, g){
+  const vivas = g.lineas.filter(l => tipo==='venta' ? l.estadoPago!=='Anulado' : l.tipoMovimiento!=='Anulado'); if (!vivas.length) return;
+  if (!confirm('¿Anular este documento completo ('+vivas.length+' líneas)? Quedará marcado como Anulado y ya no contará para el Resumen SUNAT, pero no se borrará.')) return;
+  const d = await api(null,{},'POST',{ accion: tipo==='venta' ? 'anularDocumentoVenta' : 'anularDocumentoCompra', lineas: vivas.map(l=>({ fila:l.fila, huella:l.huella })) });
+  if (!d.ok) { alert(d.error); await recargarDocs_(tipo); return; }
+  await recargarDocs_(tipo);
+}
+async function cargarVentasHistorial(){
+  const cont=document.getElementById('vh-list'), res=document.getElementById('vh-resumen');
+  try {
+    const data=await api('ventas', FILTRO_VENTAS.params());
+    if(!data.ok) throw new Error(data.error);
+    // más recientes primero POR FECHA de la venta (una venta de ayer registrada hoy se ubica en su día)
+    VENTAS_HIST = data.ventas.slice().sort((a,b)=> (new Date(b.fecha)-new Date(a.fecha)) || (b.fila-a.fila));
+    const validas = VENTAS_HIST.filter(v=>v.estadoPago!=='Anulado');
+    res.textContent = VENTAS_HIST.length ? `${VENTAS_HIST.length} venta(s) · Total ${fmt(validas.reduce((t,v)=>t+(Number(v.subtotal)||0),0))}` + (VENTAS_HIST.length!==validas.length?` (sin contar ${VENTAS_HIST.length-validas.length} anulada/s)`:'') : '';
+    DOCS_V = agruparVentas_(VENTAS_HIST);
+    if (VENTAS_HIST.length && DOCS_V.length !== VENTAS_HIST.length) res.textContent = `${DOCS_V.length} venta(s) (${VENTAS_HIST.length} líneas) · Total ${fmt(validas.reduce((t,v)=>t+(Number(v.subtotal)||0),0))}` + (VENTAS_HIST.length!==validas.length?` (sin contar ${VENTAS_HIST.length-validas.length} línea/s anulada/s)`:'');
+    cont.innerHTML = VENTAS_HIST.length ? DOCS_V.map((g,gi)=> g.lineas.length===1 ? filaVentaHtml_(g.lineas[0]) : docVentaHtml_(g,gi)).join('') : '<div class="empty-note">Sin ventas en este período.</div>';
+    cont.querySelectorAll('[data-docv-edit]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); abrirEditarDocVenta_(DOCS_V[b.dataset.docvEdit]); }));
+    cont.querySelectorAll('[data-docv-anular]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); anularDocumento_('venta', DOCS_V[b.dataset.docvAnular]); }));
     const porFila = f => VENTAS_HIST.find(v=>v.fila==f);
     cont.querySelectorAll('[data-editv]').forEach(b=>b.addEventListener('click',()=>abrirModalVenta(porFila(b.dataset.editv))));
     cont.querySelectorAll('[data-anularv]').forEach(b=>b.addEventListener('click',()=>anularRegistro('venta',Number(b.dataset.anularv),porFila(b.dataset.anularv).huella)));
@@ -3549,19 +3689,11 @@ async function cargarHistorialCompras(){
     COMPRAS_HIST = data.compras.slice().sort((a,b)=> (new Date(b.fecha)-new Date(a.fecha)) || (b.fila-a.fila));
     const validas = COMPRAS_HIST.filter(c=>c.tipoMovimiento!=='Anulado');
     res.textContent = COMPRAS_HIST.length ? `${COMPRAS_HIST.length} registro(s) · Total ${fmt(validas.reduce((t,c)=>t+(Number(c.montoTotal)||0),0))}` : '';
-    cont.innerHTML=COMPRAS_HIST.length?COMPRAS_HIST.map(c=>`
-    <div class="list-row">
-      <div class="lr-main">
-        <div class="lr-title">${esc(c.producto||c.descripcion)} ${c.tipoMovimiento==='Anulado'?'<span class="badge-anulado">ANULADO</span>':''}</div>
-        <div class="lr-sub">${new Date(c.fecha).toLocaleDateString('es-PE')} · ${esc(c.proveedor||'')}${c.comprobante?' · '+esc(c.comprobante):''}</div>
-      </div>
-      <div class="lr-total${(c.tipoMovimiento==='Anulado'||!Number(c.montoTotal))?'':' x-out'}">${(c.tipoMovimiento==='Anulado'||!Number(c.montoTotal))?'':'- '}${fmt(c.montoTotal)}</div>
-      <div class="lr-actions">
-        <button class="btn-sm" data-editc="${c.fila}">Editar</button>
-        <button class="btn-sm" data-anularc="${c.fila}">Anular</button>
-        <button class="btn-sm-danger" data-delc="${c.fila}">Eliminar</button>
-      </div>
-    </div>`).join(''):'<div class="empty-note">Sin registros en este período.</div>';
+    DOCS_C = agruparCompras_(COMPRAS_HIST);
+    if (COMPRAS_HIST.length && DOCS_C.length !== COMPRAS_HIST.length) res.textContent = `${DOCS_C.length} documento(s) (${COMPRAS_HIST.length} líneas) · Total ${fmt(validas.reduce((t,c)=>t+(Number(c.montoTotal)||0),0))}`;
+    cont.innerHTML = COMPRAS_HIST.length ? DOCS_C.map((g,gi)=> g.lineas.length===1 ? filaCompraHtml_(g.lineas[0]) : docCompraHtml_(g,gi)).join('') : '<div class="empty-note">Sin registros en este período.</div>';
+    cont.querySelectorAll('[data-docc-edit]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); abrirEditarDocCompra_(DOCS_C[b.dataset.doccEdit]); }));
+    cont.querySelectorAll('[data-docc-anular]').forEach(b=>b.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); anularDocumento_('compra', DOCS_C[b.dataset.doccAnular]); }));
     const porFila = f => COMPRAS_HIST.find(c=>c.fila==f);
     cont.querySelectorAll('[data-editc]').forEach(b=>b.addEventListener('click',()=>abrirModalCompra(porFila(b.dataset.editc))));
     cont.querySelectorAll('[data-anularc]').forEach(b=>b.addEventListener('click',()=>anularRegistro('compra',Number(b.dataset.anularc),porFila(b.dataset.anularc).huella)));
@@ -3578,6 +3710,17 @@ function llenarMeses(){
 }
 llenarMeses();
 document.getElementById('r-calcular').addEventListener('click', cargarResumen);
+document.getElementById('r-cfg-guardar').addEventListener('click', async () => {
+  const msg = document.getElementById('r-cfg-msg'), btn = document.getElementById('r-cfg-guardar');
+  msg.textContent = ''; msg.className = 'sale-msg'; btn.disabled = true;
+  try {
+    const d = await api(null,{},'POST',{ accion:'configSunat', inicio: document.getElementById('r-cfg-inicio').value, creditoInicial: document.getElementById('r-cfg-cred').value });
+    if (!d.ok) throw new Error(d.error);
+    msg.textContent = '✓ Guardado'; msg.className = 'sale-msg ok';
+    await cargarResumen();
+  } catch(err){ msg.textContent = err.message; msg.className = 'sale-msg err'; }
+  finally { btn.disabled = false; }
+});
 function badgeEl(el, texto, clase){ el.textContent = texto; el.className = 'hs-badge ' + clase; }
 document.getElementById('r-mes').addEventListener('change', () => cargarResumen());   // elegir mes actualiza el resumen Y la conciliación
 async function cargarResumen(){
@@ -3589,24 +3732,31 @@ async function cargarResumen(){
   if(!data.ok)return; const r=data.resumen;
   document.getElementById('r-periodo-label').textContent = sel.selectedOptions[0].textContent;
 
-  const totalSunat = r.totalSunat;
+  const totalSunat = r.totalSunat, cred = r.creditoFinal || 0;
+  document.getElementById('r-apagar').textContent = fmt(totalSunat);
+  badgeEl(document.getElementById('r-apagar-badge'), totalSunat > 0 ? 'A pagar' : 'Sin deuda', totalSunat > 0 ? 'neg' : 'pos');
+  document.getElementById('r-favor').textContent = fmt(cred);
+  badgeEl(document.getElementById('r-favor-badge'), cred > 0 ? 'A tu favor' : 'No aplica', cred > 0 ? 'pos' : 'neutral');
   if (totalSunat > 0) {
-    document.getElementById('r-apagar').textContent = fmt(totalSunat);
-    badgeEl(document.getElementById('r-apagar-badge'), 'A pagar', 'neg');
-    document.getElementById('r-favor').textContent = fmt(0);
-    badgeEl(document.getElementById('r-favor-badge'), 'No aplica', 'neutral');
-    document.getElementById('r-hl-label').textContent = 'Impuesto por pagar';
+    document.getElementById('r-hl-label').textContent = 'Impuesto por pagar (IGV + renta)';
     document.getElementById('r-hl-value').textContent = fmt(totalSunat);
     document.getElementById('r-hl-box').className = 'sc-highlight warn';
   } else {
-    document.getElementById('r-apagar').textContent = fmt(0);
-    badgeEl(document.getElementById('r-apagar-badge'), 'Sin deuda', 'pos');
-    document.getElementById('r-favor').textContent = fmt(Math.abs(totalSunat));
-    badgeEl(document.getElementById('r-favor-badge'), totalSunat < 0 ? 'A tu favor' : 'No aplica', totalSunat < 0 ? 'pos' : 'neutral');
-    document.getElementById('r-hl-label').textContent = 'Saldo a favor / crédito fiscal';
-    document.getElementById('r-hl-value').textContent = fmt(Math.abs(totalSunat));
+    document.getElementById('r-hl-label').textContent = 'Crédito fiscal que pasa al mes siguiente';
+    document.getElementById('r-hl-value').textContent = fmt(cred);
     document.getElementById('r-hl-box').className = 'sc-highlight';
   }
+  document.getElementById('r-igvmes').textContent = fmt(r.igvMes);
+  document.getElementById('r-cred-ant').textContent = fmt(r.creditoAnterior);
+  document.getElementById('r-igv-neto').textContent = fmt(r.igvNeto);
+  document.getElementById('r-cred-fin').textContent = fmt(cred);
+  document.getElementById('r-acu-nota').textContent = r.acumulado ? ('IGV acumulado desde ' + r.acumuladoDesde + '.') : ('Este mes es anterior al inicio del acumulado (' + r.acumuladoDesde + '): se calculó solo, sin arrastre.');
+  const acuPanel = document.getElementById('r-acu-panel');
+  if (sessionStorage.getItem('imc_admin') === '1') {
+    acuPanel.style.display = '';
+    const ci = document.getElementById('r-cfg-inicio'), cc = document.getElementById('r-cfg-cred');
+    if (document.activeElement !== ci && document.activeElement !== cc) { ci.value = (r.config && r.config.inicio) || ''; cc.value = (r.config && r.config.creditoInicial) || ''; }
+  } else acuPanel.style.display = 'none';
   document.getElementById('r-rer').textContent = fmt(r.rentaRer);
   document.getElementById('r-rer-2').textContent = fmt(r.rentaRer);
   badgeEl(document.getElementById('r-rer-badge'), r.rentaRer > 0 ? 'Este periodo' : 'No aplica', r.rentaRer > 0 ? 'pos' : 'neutral');
@@ -3733,6 +3883,59 @@ document.getElementById('cp-guardar').addEventListener('click', async () => {
 });
 
 // ================= V18: SOCIOS Y FINANCIAMIENTO =================
+let SC_HIST = {};
+const escA_ = t => esc(t).replace(/"/g,'&quot;');
+function scDialog_(titulo, cuerpo, okTxt, onOk){
+  const prev = document.getElementById('sc-dlg'); if (prev) prev.remove();
+  const o = document.createElement('div'); o.id = 'sc-dlg';
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:40px 12px;overflow:auto';
+  o.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:460px;width:100%;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.25)"><div style="font-weight:700;font-size:16px;margin-bottom:14px">'+titulo+'</div><div style="display:flex;flex-direction:column;gap:10px">'+cuerpo+'</div><div class="sale-msg" id="sc-dlg-msg" style="margin-top:10px"></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button type="button" class="btn-sm" id="sc-dlg-x">Cancelar</button><button type="button" class="btn-primary" id="sc-dlg-ok" style="width:auto;padding:10px 20px">'+okTxt+'</button></div></div>';
+  document.body.appendChild(o);
+  o.addEventListener('click', e => { if (e.target === o) o.remove(); });
+  o.querySelector('#sc-dlg-x').onclick = () => o.remove();
+  const ok = o.querySelector('#sc-dlg-ok'), msg = o.querySelector('#sc-dlg-msg');
+  ok.onclick = async () => { msg.textContent=''; msg.className='sale-msg'; ok.disabled = true;
+    try { await onOk(o); o.remove(); } catch(err){ msg.textContent = err.message; msg.className = 'sale-msg err'; ok.disabled = false; } };
+}
+function scEditar_(id){
+  const h = SC_HIST[id]; if (!h) return;
+  const f = /^\d{4}-\d{2}-\d{2}$/.test(String(h.fecha)) ? String(h.fecha) : isoLocal(new Date(h.fecha));
+  const st = 'padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;width:100%';
+  const tipos = ['Aporte','Préstamo','Pago/Devolución al Socio','Retiro Personal'];
+  scDialog_('Editar movimiento '+esc(id),
+    '<input id="scd-socio" type="text" value="'+escA_(h.socio)+'" style="'+st+'">'+
+    '<select id="scd-tipo" style="'+st+'">'+tipos.map(t=>'<option'+(t===h.tipo?' selected':'')+'>'+t+'</option>').join('')+'</select>'+
+    '<div style="display:flex;gap:8px"><input id="scd-monto" type="number" step="0.01" value="'+escA_(h.monto)+'" placeholder="Monto (S/)" style="'+st+'"><input id="scd-fecha" type="date" value="'+f+'" style="'+st+'"></div>'+
+    '<label class="chk-mantener" id="scd-ing-row"><input type="checkbox" id="scd-ing"'+(h.ingresoACaja==='No'?'':' checked')+'> El dinero sí entró a Caja (destílda si el socio pagó directo)</label>'+
+    '<input id="scd-obs" type="text" placeholder="Observación (opcional)" value="'+escA_(h.observacion)+'" style="'+st+'">',
+    'Guardar cambios',
+    async o => {
+      const body = { accion:'editarMovimientoSocio', id, socio:o.querySelector('#scd-socio').value.trim(), tipo:o.querySelector('#scd-tipo').value, monto:o.querySelector('#scd-monto').value, fecha:o.querySelector('#scd-fecha').value, ingresoACaja:o.querySelector('#scd-ing').checked ? 'Sí' : 'No', observacion:o.querySelector('#scd-obs').value.trim() };
+      if (!body.socio) throw new Error('Indica el nombre del socio.');
+      if (!(Number(body.monto) > 0)) throw new Error('Indica el monto.');
+      const d = await api(null,{},'POST',body); if (!d.ok) throw new Error(d.error);
+      await cargarSocios();
+    });
+  const dlg = document.getElementById('sc-dlg'), tsel = dlg.querySelector('#scd-tipo'), row = dlg.querySelector('#scd-ing-row');
+  const vis = () => { row.style.display = (tsel.value==='Aporte'||tsel.value==='Préstamo') ? 'flex' : 'none'; }; tsel.addEventListener('change', vis); vis();
+}
+function scAnular_(id){
+  const h = SC_HIST[id]; if (!h) return;
+  const st = 'padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;width:100%';
+  scDialog_('Anular movimiento '+esc(id),
+    '<div style="font-size:13px;color:#4b5563;line-height:1.5"><b>'+esc(h.socio)+' — '+esc(h.tipo)+' · '+fmt(h.monto)+'</b><br>Quedará en el historial como anulado y dejará de contar en el saldo del socio y en Caja. Si solo fue un error de monto o fecha, mejor usa "Editar".</div>'+
+    '<input id="scd-motivo" type="text" placeholder="Motivo (obligatorio). Ej.: error de digitación" style="'+st+'">',
+    'Anular movimiento',
+    async o => {
+      const motivo = o.querySelector('#scd-motivo').value.trim(); if (!motivo) throw new Error('Escribe el motivo de la anulación.');
+      const d = await api(null,{},'POST',{ accion:'anularMovimientoSocio', id, motivo }); if (!d.ok) throw new Error(d.error);
+      await cargarSocios();
+    });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest ? e.target.closest('[data-sc-edit],[data-sc-anular]') : null; if (!b) return;
+  if (b.dataset.scEdit) scEditar_(b.dataset.scEdit); else scAnular_(b.dataset.scAnular);
+});
 async function cargarSocios(){
   const contS = document.getElementById('sc-por-socio'); const contH = document.getElementById('sc-historial');
   try {
@@ -3745,10 +3948,14 @@ async function cargarSocios(){
       <div class="when">Financiado: ${fmt(s.totalFinanciado)} · Recuperado: ${fmt(s.totalRecuperado)}${s.retiros?' · Retiros: '+fmt(s.retiros):''}</div></div>
       <div class="amt">${fmt(s.pendiente)}</div></div>`).join('') : '<div class="empty-note">Sin socios registrados.</div>';
     const hist = data.datos.historial || [];
-    contH.innerHTML = hist.length ? hist.slice(0,60).map(h => `
-      <div class="venta-row"><div><div class="who">${esc(h.socio)} — ${esc(h.tipo)}</div>
-      <div class="when">${h.ingresoACaja==='No' ? 'No pasó por Caja' : 'Vía Caja'}${h.observacion?' · '+esc(h.observacion):''} · ${fechaCorta_(h.fecha)}</div></div>
-      <div class="amt">${fmt(h.monto)}</div></div>`).join('') : '<div class="empty-note">Sin movimientos.</div>';
+    const adm = sessionStorage.getItem('imc_admin') === '1';
+    SC_HIST = {}; hist.forEach(h => { SC_HIST[h.id] = h; });
+    contH.innerHTML = hist.length ? hist.slice(0,60).map(h => {
+      const an = h.estado === 'Anulado';
+      const acc = (!an && adm && !h.idCompromiso) ? `<div style="margin-top:6px;display:flex;gap:6px"><button type="button" class="btn-sm" data-sc-edit="${escA_(h.id)}">Editar</button><button type="button" class="btn-sm" data-sc-anular="${escA_(h.id)}">Anular</button></div>` : '';
+      return `<div class="venta-row"${an?' style="opacity:.6"':''}><div><div class="who">${esc(h.socio)} — ${esc(h.tipo)}${an?' <span style="font-size:11px;font-weight:700;color:#b91c1c;border:1px solid #fecaca;background:#fef2f2;border-radius:999px;padding:1px 8px;margin-left:6px">ANULADO</span>':''}</div>
+      <div class="when">${h.ingresoACaja==='No' ? 'No pasó por Caja' : 'Vía Caja'}${h.observacion?' · '+esc(h.observacion):''} · ${fechaCorta_(h.fecha)}${an&&h.motivoAnulacion?' · Motivo: '+esc(h.motivoAnulacion):''}</div>${acc}</div>
+      <div class="amt"${an?' style="text-decoration:line-through"':''}>${fmt(h.monto)}</div></div>`; }).join('') : '<div class="empty-note">Sin movimientos.</div>';
   } catch(err){ contS.innerHTML = `<div class="empty-note">${esc(err.message)}</div>`; contH.innerHTML=''; }
 }
 document.getElementById('sc-tipo').addEventListener('change', () => {
@@ -4179,7 +4386,7 @@ function flowStart(t,h){clearTimeout(okT);okc.innerHTML='<div class="x-mk"><div 
 function flowOk(t,d){if(!okc.querySelector('.x-mk'))flowStart('');okc.querySelector('.x-mk').classList.add('done');okc.querySelector('.x-big').innerHTML=CHK;swap('#x-okt',t);swap('#x-oks',d||'');okc.querySelector('.x-pbar i').classList.add('run');clearTimeout(okT);okT=setTimeout(cerrar,2200)}
 function flowFail(m,t){if(!okc.querySelector('.x-mk'))flowStart('');const k=okc.querySelector('.x-mk');k.classList.add('done','err');okc.querySelector('.x-big').innerHTML=XX;swap('#x-okt',t||'No se pudo completar');swap('#x-oks',String(m).slice(0,320));okc.querySelector('.x-pbar').outerHTML='<button type="button" class="btn-sm" id="x-fx" style="margin-top:16px">Entendido</button>';$('x-fx').onclick=e=>{e.stopPropagation();cerrar()};clearTimeout(okT)}
 ov.onclick=e=>{if(!okc.querySelector('.err')&&PR.act)return;cerrar()};
-const LB={venta:['Guardando venta…','Venta registrada'],ajustarStock:['Ajustando stock…','Stock ajustado'],compra:['Registrando compra…','Compra registrada'],cotizacion:['Generando cotización…','Cotización lista','Esto puede tardar unos segundos'],cotizacionVenta:['Generando venta…','Venta generada'],editarProducto:['Guardando producto…','Producto actualizado'],crearProducto:['Creando producto…','Producto creado'],editarVenta:['Guardando cambios…','Cambios guardados'],editarCompra:['Guardando cambios…','Cambios guardados'],editarCliente:['Guardando cambios…','Cambios guardados'],editarConversion:['Guardando cambios…','Cambios guardados'],editarTcSunat:['Guardando TC…','TC SUNAT guardado'],eliminarVenta:['Eliminando…','Eliminado'],eliminarCompra:['Eliminando…','Eliminado'],eliminarProducto:['Eliminando…','Eliminado'],anularVenta:['Anulando…','Anulado'],anularCompra:['Anulando…','Anulado'],pagoCompromiso:['Registrando pago…','Pago registrado'],compromiso:['Registrando compromiso…','Compromiso registrado'],movimientoSocio:['Registrando movimiento…','Movimiento registrado'],conversion:['Registrando conversión…','Conversión registrada'],cliente:['Guardando cliente…','Cliente guardado']};
+const LB={venta:['Guardando venta…','Venta registrada'],ajustarStock:['Ajustando stock…','Stock ajustado'],configSunat:['Guardando configuración…','Configuración guardada'],editarDocumentoVenta:['Actualizando venta…','Venta actualizada'],editarDocumentoCompra:['Actualizando documento…','Documento actualizado'],anularDocumentoVenta:['Anulando venta…','Venta anulada'],anularDocumentoCompra:['Anulando documento…','Documento anulado'],editarMovimientoSocio:['Guardando cambios…','Movimiento actualizado'],anularMovimientoSocio:['Anulando movimiento…','Movimiento anulado'],compra:['Registrando compra…','Compra registrada'],cotizacion:['Generando cotización…','Cotización lista','Esto puede tardar unos segundos'],cotizacionVenta:['Generando venta…','Venta generada'],editarProducto:['Guardando producto…','Producto actualizado'],crearProducto:['Creando producto…','Producto creado'],editarVenta:['Guardando cambios…','Cambios guardados'],editarCompra:['Guardando cambios…','Cambios guardados'],editarCliente:['Guardando cambios…','Cambios guardados'],editarConversion:['Guardando cambios…','Cambios guardados'],editarTcSunat:['Guardando TC…','TC SUNAT guardado'],eliminarVenta:['Eliminando…','Eliminado'],eliminarCompra:['Eliminando…','Eliminado'],eliminarProducto:['Eliminando…','Eliminado'],anularVenta:['Anulando…','Anulado'],anularCompra:['Anulando…','Anulado'],pagoCompromiso:['Registrando pago…','Pago registrado'],compromiso:['Registrando compromiso…','Compromiso registrado'],movimientoSocio:['Registrando movimiento…','Movimiento registrado'],conversion:['Registrando conversión…','Conversión registrada'],cliente:['Guardando cliente…','Cliente guardado']};
 const CONN=/No se pudo conectar|no es JSON|No se pudo confirmar|Failed to fetch|Load failed|NetworkError/i;
 const PR={act:false,err:null,det:'',w:0,g:0,first:null,last:null,t0:0,quiet:null,maxT:null};
 function detalle(l){const b=(l&&l.body)||{},r=(l&&l.res)||{};if(l&&l.acc==='cotizacion')return [r.numeroFormateado,b.cliente].filter(Boolean).join(' · ');if(l&&l.acc==='venta')return [b.cliente||'',b.metodoPago||''].filter(Boolean).join(' · ');return b.nombre||b.descripcion||b.cliente||b.proveedor||''}
