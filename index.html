@@ -1424,31 +1424,93 @@ html body .view.active.animate-pop-fast{animation:popFast .28s cubic-bezier(.2,.
 
     <!-- ---------- CLIENTES Y VEHÍCULOS ---------- -->
     <section class="view" id="view-clientes">
+      <style id="cl2-css">
+#view-clientes .cl2-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#view-clientes .cl2-head small{font-weight:500;color:var(--text-dim);font-size:12px}
+#view-clientes .cl2-form{padding:16px 18px}
+#view-clientes .cl2-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+#view-clientes .cl2-f{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--text-dim)}
+#view-clientes .cl2-f.cl2-w2{grid-column:span 2}
+@media(max-width:560px){#view-clientes .cl2-f.cl2-w2{grid-column:span 1}}
+#view-clientes .cl2-f input,#view-clientes .cl2-f textarea{width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;font-size:14px;font-weight:400}
+#view-clientes .cl2-f input:focus,#view-clientes .cl2-f textarea:focus,#view-clientes .cl2-sbox input:focus{outline:none;border-color:var(--blue)}
+#view-clientes #cl-placa:not(:placeholder-shown){text-transform:uppercase;font-weight:700;letter-spacing:.05em}
+#view-clientes .cl2-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--soft-line)}
+#view-clientes .cl2-search{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 18px}
+#view-clientes .cl2-sbox{position:relative;flex:1;min-width:220px}
+#view-clientes .cl2-sbox input{width:100%;box-sizing:border-box;padding:12px 14px 12px 42px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);font-size:14px}
+#view-clientes .cl2-mag{position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.55;pointer-events:none}
+#view-clientes .cl2-list-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+#view-clientes .cl2-list-head small{font-weight:500;color:var(--text-dim);font-size:12px}
+#view-clientes #cli-list.cl2-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;padding:16px 18px 18px}
+.cl2-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--card);display:flex;flex-direction:column;gap:12px;transition:border-color .15s,box-shadow .15s}
+.cl2-card:hover{border-color:var(--blue)}
+.cl2-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.cl2-placa{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800;font-size:16px;letter-spacing:.06em;padding:4px 10px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:var(--text)}
+.cl2-st{font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px;border:1px solid transparent;white-space:nowrap}
+.cl2-st.ok{color:var(--pos);background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3)}
+.cl2-st.warn{color:#b45309;background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.38)}
+.cl2-st.bad{color:var(--neg);background:rgba(244,63,94,.12);border-color:rgba(244,63,94,.32)}
+.cl2-st.none{color:var(--text-dim);background:var(--hover);border-color:var(--line)}
+html[data-theme="dark"] .cl2-st.warn{color:#fbbf24}
+.cl2-nom{font-weight:700;font-size:15px;color:var(--text);word-break:break-word;line-height:1.3}
+.cl2-nom small{display:block;font-weight:500;color:var(--text-dim);font-size:12px;margin-top:2px}
+.cl2-info{background:var(--paper);border:1px solid var(--soft-line);border-radius:11px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;font-size:12px}
+.cl2-info div{display:flex;justify-content:space-between;gap:12px;color:var(--text-dim)}
+.cl2-info b{color:var(--text);font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:62%}
+.cl2-btns{display:flex;gap:8px;border-top:1px solid var(--soft-line);padding-top:12px}
+.cl2-btns button,.cl2-btn{flex:1;padding:9px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--text);font-size:12px;font-weight:700;cursor:pointer}
+.cl2-btns button:hover,.cl2-btn:hover{background:var(--hover)}
+.cl2-btns .pri,.cl2-btn.pri{background:var(--blue-s);color:var(--blue);border-color:var(--blue)}
+.cl2-ov{position:fixed;inset:0;background:rgba(6,21,27,.62);backdrop-filter:blur(3px);z-index:9998;display:flex;align-items:flex-start;justify-content:center;padding:28px 12px;overflow:auto}
+.cl2-modal{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:18px;max-width:880px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.35);overflow:hidden}
+.cl2-mh{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:var(--paper)}
+.cl2-mh .cl2-placa{font-size:18px}
+.cl2-mb{padding:20px 22px;display:flex;flex-direction:column;gap:18px}
+.cl2-health{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--paper)}
+.cl2-health.ok{border-color:rgba(16,185,129,.4)}.cl2-health.warn{border-color:rgba(245,158,11,.5)}.cl2-health.bad{border-color:rgba(244,63,94,.45)}
+.cl2-hl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+.cl2-bar{width:210px;max-width:100%}
+.cl2-bar .cl2-track{height:10px;border-radius:99px;background:var(--soft-line);overflow:hidden;margin:6px 0 4px}
+.cl2-bar .cl2-fill{height:100%;border-radius:99px;transition:width .4s}
+.cl2-fill.ok{background:#10b981}.cl2-fill.warn{background:#f59e0b}.cl2-fill.bad{background:#f43f5e}.cl2-fill.none{background:var(--line)}
+.cl2-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.cl2-tile{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--paper)}
+.cl2-tile span{display:block;font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px}
+.cl2-tile b{font-size:13px;font-weight:600;word-break:break-word}
+.cl2-ht{width:100%;border-collapse:collapse;font-size:12.5px}
+.cl2-ht th{text-align:left;color:var(--text-dim);font-weight:600;font-size:11.5px;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.cl2-ht td{padding:11px 12px;border-bottom:1px solid var(--soft-line);vertical-align:top}
+.cl2-ht tr:last-child td{border-bottom:0}
+.cl2-ht .r{text-align:right;white-space:nowrap}
+.cl2-ht .dsc{min-width:220px;line-height:1.45}
+.cl2-ht button{padding:5px 9px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--text);font-size:11.5px;font-weight:700;cursor:pointer;margin-right:4px}
+.cl2-mf{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding:14px 22px;border-top:1px solid var(--line);background:var(--paper)}
+.cl2-mf .cl2-btn{flex:0 0 auto;padding:10px 16px}
+.cl2-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+</style>
       <div class="topline"><h2>Clientes y vehículos</h2></div>
       <div class="panel">
-        <div class="panel-head">Registrar servicio</div>
-        <div class="panel-body" style="padding:16px 18px;">
+        <div class="panel-head cl2-head"><span>🔧 Registrar servicio</span><small>Guarda la ficha del vehículo y deja listo el sticker</small></div>
+        <div class="panel-body cl2-form">
           <div class="aviso-origen" id="cl-origen-msg"></div>
-          <div class="cliente-row">
-            <input type="date" id="cl-fecha" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
-            <input type="text" id="cl-placa" placeholder="Placa" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
+          <div class="cl2-grid">
+            <label class="cl2-f"><span>Fecha de atención</span><input type="date" id="cl-fecha"></label>
+            <label class="cl2-f"><span>Placa del vehículo *</span><input type="text" id="cl-placa" placeholder="Ej: C8Z-577" autocomplete="off"></label>
+            <label class="cl2-f cl2-w2"><span>Nombre del cliente *</span><input type="text" id="cl-nombre" placeholder="Ej: Jesús Paredes / Papito Elmer"></label>
+            <label class="cl2-f"><span>Aceite que utiliza</span><input type="text" id="cl-aceite" placeholder="Ej: 10W-30 Shell HX7 Sintético" class="cl-autofit"></label>
+            <label class="cl2-f"><span>Cantidad / medida</span><input type="text" id="cl-cantidad" placeholder="Ej: 1 galón + 1/8" class="cl-autofit"></label>
+            <label class="cl2-f"><span>Filtro de aceite</span><input type="text" id="cl-filtroaceite" placeholder="Ej: EVOPARTS OIL-260"></label>
+            <label class="cl2-f"><span>Filtro de aire</span><input type="text" id="cl-filtroaire" placeholder="Ej: SEINICA 28113-1R100"></label>
+            <label class="cl2-f"><span>Filtro de petróleo</span><input type="text" id="cl-filtropetroleo" placeholder="Si no lleva, déjalo vacío"></label>
+            <label class="cl2-f"><span>Km actual</span><input type="number" id="cl-km" placeholder="Ej: 45000"></label>
+            <label class="cl2-f"><span>Próx. cambio (Km)</span><input type="number" id="cl-proxcambio" placeholder="Ej: 50000"></label>
+            <label class="cl2-f cl2-w2"><span>Observaciones</span><textarea id="cl-observaciones" placeholder="Observaciones" rows="2" class="cl-autofit" style="font-family:inherit;resize:none;overflow:hidden;line-height:1.35;"></textarea></label>
           </div>
-          <div class="cliente-row"><input type="text" id="cl-nombre" placeholder="Nombre del cliente" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;"></div>
-          <div class="cliente-row">
-            <input type="text" id="cl-aceite" placeholder="Aceite que utiliza" class="cl-autofit" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
-            <input type="text" id="cl-cantidad" placeholder="Cantidad (ej. 1 galón + 1/8)" class="cl-autofit" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
+          <div class="cl2-actions">
+            <button class="btn-primary" id="cl-guardar" style="width:auto;padding:11px 22px;">Guardar servicio</button>
+            <button type="button" class="btn-sm" id="cl-limpiar">Limpiar campos</button>
           </div>
-          <div class="cliente-row">
-            <input type="text" id="cl-filtroaceite" placeholder="Filtro de aceite" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
-            <input type="text" id="cl-filtroaire" placeholder="Filtro de aire" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
-          </div>
-          <div class="cliente-row"><input type="text" id="cl-filtropetroleo" placeholder="Filtro de petróleo" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;"></div>
-          <div class="cliente-row"><textarea id="cl-observaciones" placeholder="Observaciones" rows="2" class="cl-autofit" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;resize:none;overflow:hidden;line-height:1.25;"></textarea></div>
-          <div class="cliente-row">
-            <input type="number" id="cl-km" placeholder="Km actual" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
-            <input type="number" id="cl-proxcambio" placeholder="Próx. cambio (Km)" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
-          </div>
-          <button class="btn-primary" id="cl-guardar" style="width:auto;padding:10px 20px;">Guardar</button>
           <div class="sale-msg" id="cl-msg"></div>
         </div>
       </div>
@@ -1458,8 +1520,10 @@ html body .view.active.animate-pop-fast{animation:popFast .28s cubic-bezier(.2,.
       </div>
       <div class="panel">
         <div class="panel-head">Buscar por placa</div>
-        <div class="panel-body" style="padding:16px 18px;">
-          <input type="text" id="cl-buscar-placa" placeholder="Placa o nombre del cliente…" style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;">
+        <div class="panel-body cl2-search">
+          <div class="cl2-sbox"><span class="cl2-mag">🔍</span><input type="text" id="cl-buscar-placa" placeholder="Placa o nombre del cliente…" autocomplete="off"></div>
+          <button type="button" class="btn-sm" id="cl-limpiar-busq">Limpiar</button>
+          <button type="button" class="btn-primary" id="cl-nuevo-veh" style="width:auto;padding:10px 16px;">+ Registrar vehículo</button>
         </div>
         <div class="panel-body" style="padding:0;" id="cl-historial"><div class="empty-note">Escribe una placa o un nombre arriba para ver su historial.</div></div>
       </div>
@@ -2169,7 +2233,7 @@ document.getElementById('edit-modal-save').addEventListener('click', async () =>
     if (tipoGuardado === 'conciliacion') { await cargarHistorialCompras(); await cargarResumen(); }   // recarga la conciliación y el Resumen SUNAT con el TC nuevo
     if (tipoGuardado === 'cliente') {
       try { const dc = await api('clientes'); if (dc.ok) CLIENTES_CACHE = dc.registros; } catch(e) {}
-      const q = document.getElementById('cl-buscar-placa').value.trim(); if (q) await buscarClientes_(q);
+      const q = document.getElementById('cl-buscar-placa').value.trim(); if (q) await buscarClientes_(q); else if (window.repintarClientesV19) window.repintarClientesV19();
     }
     if (tipoGuardado === 'conversion') { await cargarHistorialConversiones(); await cargarProductos(); }
     if (tipoGuardado === 'pagoCompromiso') { await cargarCompromisos(); await cargarCajaReal(); }
@@ -4141,6 +4205,7 @@ document.getElementById('cl-guardar').addEventListener('click', async () => {
     document.getElementById('cl-fecha').value = hoyISO();
     SERVICIO_ORIGEN_NUMERO = null;
     cargarHistorialCotizaciones(); cargarRegistrosRecientes();
+    if (window.recargarClientesV19) window.recargarClientesV19();
   } catch(err) {
     msg.textContent = '✗ ' + err.message + ' (¿ya actualizaste el Apps Script?)'; msg.className='sale-msg err';
   }
@@ -4738,7 +4803,7 @@ const pH=document.createElement('div');pH.className='panel';
 pH.innerHTML='<div class="panel-head">Historial de cotizaciones recientes</div><div class="panel-body" style="padding:8px 10px;overflow-x:auto" id="cqh-body"><div class="empty-note">Cargando…</div></div>';
 vc.appendChild(pH);
 const pCli=document.createElement('div');pCli.className='panel';
-pCli.innerHTML='<div class="panel-head">Clientes registrados</div><div class="panel-body" style="padding:0" id="cli-list"><div class="empty-note">Cargando…</div></div><button type="button" class="cl-acc" id="cli-acc" style="display:none"></button>';
+pCli.innerHTML='<div class="panel-head cl2-list-head"><span>Vehículos y clientes registrados</span><small id="cli-count"></small></div><div class="panel-body cl2-cards" id="cli-list"><div class="empty-note">Cargando…</div></div><button type="button" class="cl-acc" id="cli-acc" style="display:none"></button>';
 vc.appendChild(pCli);
 let Q='',ALL=false,RECS=[];
 const hay=(...v)=>nrm(v.join(' ')).includes(nrm(Q));
@@ -4748,15 +4813,77 @@ function paintCot(){
   cont.innerHTML=L.length?'<table class="cot-tab"><thead><tr><th>Fecha</th><th>Cliente</th><th>Descripción</th><th>Monto (S/)</th><th></th></tr></thead><tbody>'+L.map(c=>'<tr><td>'+new Date(c.fecha).toLocaleDateString('es-PE')+'</td><td>'+esc(c.clienteLimpio||c.cliente||'—')+'</td><td class="dsc">'+esc(desc(c))+'</td><td>'+fmt(c.total)+'</td><td><button type="button" class="btn-mini" data-u="'+esc(String(c.numero))+'">Usar</button> <button type="button" class="btn-mini" data-v="'+esc(String(c.numero))+'">Ver</button></td></tr><tr class="det" style="display:none"><td colspan="5">'+renderFilaCotizacion(c)+'</td></tr>').join('')+'</tbody></table>':'<div class="empty-note">Sin cotizaciones.</div>';
   cont.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{prellenarServicioDesdeCotizacion(b.dataset.u);pServ.scrollIntoView({behavior:'smooth'})});
   cont.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const d=b.closest('tr').nextElementSibling,on=d.style.display==='none';d.style.display=on?'':'none';if(on&&!d.dataset.b){d.dataset.b=1;enlazarAccionesCotizacion(d)}})}
+// ---- Vehículos: una tarjeta por placa (semáforo según días desde la última atención) + ficha con todo el historial ----
+const CL_DIAS_ALERTA=120, CL_DIAS_VENCIDO=180;   // ≤120 días: al día · 121–180: próximo a cambio · >180: cambio vencido (el sistema guarda Km del servicio, no el odómetro actual)
+const eH=t=>escA_(t), ymd=r=>String((r&&r.fechaISO)||'').slice(0,10);
+const keyV=r=>{const p=String(r.placa||'').toUpperCase().replace(/[^A-Z0-9]/g,'');return p?('P:'+p):('N:'+nrm(r.nombre).trim())};
+const diasDesde=iso=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);if(!m)return null;const d=new Date(+m[1],+m[2]-1,+m[3]),h=new Date();h.setHours(0,0,0,0);return Math.max(0,Math.round((h-d)/86400000))};
+const estadoV=dias=>dias==null?{k:'none',t:'Sin fecha',pct:0}:dias<=CL_DIAS_ALERTA?{k:'ok',t:'Al día',pct:Math.max(0,Math.round(100*(1-dias/CL_DIAS_VENCIDO)))}:dias<=CL_DIAS_VENCIDO?{k:'warn',t:'Próximo a cambio',pct:Math.max(0,Math.round(100*(1-dias/CL_DIAS_VENCIDO)))}:{k:'bad',t:'Cambio vencido',pct:0};
+const val=v=>{const t=String(v==null?'':v).trim();return(!t||/^no$/i.test(t))?'':t};
+const km=v=>{const n=Number(String(v==null?'':v).replace(/[^\d.]/g,''));return n?n.toLocaleString('es-PE'):''};
+function agrupar(lista){
+  const M=new Map();
+  lista.forEach(r=>{const k=keyV(r);if(k==='N:')return;const g=M.get(k)||{k:k,regs:[]};g.regs.push(r);M.set(k,g)});
+  const out=[...M.values()];
+  out.forEach(g=>{g.regs.sort((a,b)=>ymd(b).localeCompare(ymd(a))||(b.fila-a.fila));g.ult=g.regs[0]});
+  return out.sort((a,b)=>ymd(b.ult).localeCompare(ymd(a.ult))||(b.ult.fila-a.ult.fila));
+}
+let SRES=[],SRES_Q='',CARDS=[];
+function fuente(){return Q?(SRES_Q===Q?SRES:CLIENTES_CACHE.filter(r=>hay(r.nombre,r.placa))):CLIENTES_CACHE}
+function cardHtml(g,i){
+  const u=g.ult,dias=diasDesde(ymd(u)),st=estadoV(dias),nAt=g.regs.length;
+  return '<div class="cl2-card"><div class="cl2-top"><span class="cl2-placa">'+esc(u.placa||'S/PLACA')+'</span><span class="cl2-st '+st.k+'">'+(st.k==='bad'?'▲ ':(st.k==='ok'||st.k==='warn')?'● ':'')+st.t+'</span></div>'+
+    '<div class="cl2-nom">'+esc(u.nombre||'Sin nombre')+'<small>'+nAt+' atención'+(nAt===1?'':'es')+' registrada'+(nAt===1?'':'s')+'</small></div>'+
+    '<div class="cl2-info"><div><span>Aceite habitual</span><b title="'+eH(u.aceite)+'">'+esc(val(u.aceite)||'—')+'</b></div>'+
+    '<div><span>Última atención</span><b>'+(ymd(u)?fechaCorta_(ymd(u)):'—')+(dias!=null?' · hace '+dias+' d':'')+'</b></div>'+
+    '<div><span>Km · Próx. cambio</span><b>'+esc(km(u.km)||'—')+' · '+esc(km(u.proxCambio)||'—')+'</b></div></div>'+
+    '<div class="cl2-btns"><button type="button" data-ce="'+i+'">✏️ Editar</button><button type="button" data-cs="'+i+'">🏷️ Sticker</button><button type="button" class="pri" data-cf="'+i+'">📋 Ficha</button></div></div>';
+}
 function paintCli(){
-  const list=$('cli-list'),M=new Map();
-  for(let i=CLIENTES_CACHE.length-1;i>=0;i--){const r=CLIENTES_CACHE[i],k=nrm(r.nombre).trim();if(!k)continue;
-    const g=M.get(k)||{r:r,placas:new Set(),cel:''};if(r.placa)g.placas.add(r.placa);g.cel=g.cel||r.celular||r.telefono||'';M.set(k,g)}
-  const L=[...M.values()].filter(g=>!Q||hay(g.r.nombre,[...g.placas].join(' '),g.cel)),show=(ALL||Q)?L:L.slice(0,5);
-  list.innerHTML=show.length?show.map((g,i)=>'<div class="venta-row"><div><div class="who">'+esc(g.r.nombre)+'</div><div class="when">'+esc([...g.placas].join(' · ')||'—')+(g.cel?' · '+esc(g.cel):'')+'</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn-mini" data-e="'+i+'">Editar</button><button type="button" class="btn-mini" data-s="'+i+'">🏷️ Ver sticker</button></div></div>').join(''):'<div class="empty-note">Sin clientes.</div>';
-  list.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>abrirModalCliente(show[+b.dataset.e].r));
-  list.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>generarYCompartirSticker(servicioDesdeResultadoCliente_(show[+b.dataset.s].r)));
-  const acc=$('cli-acc');acc.style.display=(!Q&&L.length>5)?'block':'none';acc.textContent=ALL?'▲ Mostrar menos':'▼ Mostrar todos los clientes ('+L.length+')'}
+  const list=$('cli-list'),G=agrupar(fuente()),show=(ALL||Q)?G:G.slice(0,6);CARDS=show;
+  $('cli-count').textContent=G.length?('Mostrando '+show.length+' de '+G.length+' vehículo'+(G.length===1?'':'s')):'';
+  list.innerHTML=show.length?show.map(cardHtml).join(''):'<div class="empty-note" style="grid-column:1/-1">'+(Q?'Sin resultados.':'Aún no hay vehículos registrados.')+'</div>';
+  list.querySelectorAll('[data-ce]').forEach(b=>b.onclick=()=>abrirModalCliente(CARDS[+b.dataset.ce].ult));
+  list.querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>generarYCompartirSticker(servicioDesdeResultadoCliente_(CARDS[+b.dataset.cs].ult)));
+  list.querySelectorAll('[data-cf]').forEach(b=>b.onclick=()=>abrirFicha(CARDS[+b.dataset.cf]));
+  const acc=$('cli-acc');acc.style.display=(!Q&&G.length>6)?'block':'none';acc.textContent=ALL?'▲ Mostrar menos':'▼ Mostrar todos los vehículos ('+G.length+')'}
+async function abrirFicha(g){
+  const ov=document.createElement('div');ov.className='cl2-ov';ov.innerHTML='<div class="cl2-modal"><div class="empty-note" style="padding:30px">Cargando ficha…</div></div>';
+  document.body.appendChild(ov);ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  let regs=g.regs;
+  try{const d=await api('clientes',{placa:g.ult.placa||g.ult.nombre});if(d&&d.ok){const mine=d.registros.filter(r=>keyV(r)===g.k);if(mine.length)regs=mine}}catch(e){}
+  regs=regs.slice().sort((a,b)=>ymd(b).localeCompare(ymd(a))||(b.fila-a.fila));
+  const u=regs[0],dias=diasDesde(ymd(u)),st=estadoV(dias),icono=st.k==='ok'?'💚':st.k==='warn'?'🟠':st.k==='bad'?'🔴':'⚪';
+  const tag=st.k==='ok'?'ESTADO ÓPTIMO':st.k==='warn'?'PRÓXIMO A CAMBIO':st.k==='bad'?'CAMBIO VENCIDO':'SIN FECHA';
+  const tile=(t,v)=>'<div class="cl2-tile"><span>'+t+'</span><b>'+(esc(val(v))||'—')+'</b></div>';
+  const trabajo=r=>[val(r.aceite)?esc(val(r.aceite))+(val(r.cantidad)?' ('+esc(val(r.cantidad))+')':''):'',val(r.filtroAceite)?'Filtro aceite: '+esc(val(r.filtroAceite)):'',val(r.filtroAire)?'Filtro aire: '+esc(val(r.filtroAire)):'',val(r.filtroPetroleo)?'Filtro petróleo: '+esc(val(r.filtroPetroleo)):'',val(r.observaciones)?'<i>'+esc(val(r.observaciones))+'</i>':''].filter(Boolean).join('<br>')||'—';
+  const monto=r=>{const c=(typeof COTIZACIONES_CACHE!=='undefined'&&r.cotizacionOrigen)?COTIZACIONES_CACHE.find(x=>String(x.numero)===String(r.cotizacionOrigen)):null;return c?fmt(c.total):'—'};
+  const prox=ymd(u)?(()=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd(u));const d=new Date(+m[1],+m[2]-1+6,+m[3]);return d.toLocaleDateString('es-PE',{month:'short',year:'numeric'})})():'—';
+  ov.firstChild.innerHTML=
+   '<div class="cl2-mh"><div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="cl2-placa">'+esc(u.placa||'S/PLACA')+'</span><span class="cl2-st none">'+regs.length+' atención'+(regs.length===1?'':'es')+'</span></div><div style="margin-top:6px;font-size:13px;color:var(--text-dim)">Cliente: <b style="color:var(--text)">'+esc(u.nombre||'—')+'</b></div></div><button type="button" class="cl2-btn" id="cl2-x" style="flex:0 0 auto;padding:8px 14px">✕ Cerrar</button></div>'+
+   '<div class="cl2-mb">'+
+   '<div class="cl2-health '+st.k+'"><div style="display:flex;align-items:center;gap:14px"><div style="font-size:26px">'+icono+'</div><div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="cl2-hl">Estado del aceite actual</span><span class="cl2-st '+st.k+'">'+tag+'</span></div><div style="font-weight:700;margin-top:4px">'+esc(val(u.aceite)||'Sin aceite registrado')+'</div><div style="font-size:12px;color:var(--text-dim);margin-top:2px">Último servicio: '+(ymd(u)?fechaCorta_(ymd(u)):'—')+(dias!=null?' (hace '+dias+' días)':'')+'</div></div></div>'+
+   '<div class="cl2-bar"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span style="color:var(--text-dim)">Vida útil estimada</span><span>'+st.pct+'%</span></div><div class="cl2-track"><div class="cl2-fill '+st.k+'" style="width:'+st.pct+'%"></div></div><div style="font-size:11px;color:var(--text-dim);text-align:right">Revisión sugerida: '+esc(prox)+'</div></div></div>'+
+   '<div class="cl2-tiles">'+tile('🛢️ Filtro de aceite',u.filtroAceite)+tile('💨 Filtro de aire',u.filtroAire)+tile('⛽ Filtro de petróleo',u.filtroPetroleo)+tile('📍 Km → Próx. cambio',(km(u.km)||'—')+' → '+(km(u.proxCambio)||'—'))+'</div>'+
+   '<div><div class="cl2-hl" style="margin-bottom:10px">Historial de atenciones</div><div class="cl2-scroll"><table class="cl2-ht"><thead><tr><th>Fecha</th><th>Trabajo / productos</th><th class="r">Km → Próx.</th><th class="r">Monto</th><th></th></tr></thead><tbody>'+
+   regs.map((r,i)=>'<tr><td>'+(ymd(r)?fechaCorta_(ymd(r)):'—')+'</td><td class="dsc">'+trabajo(r)+'</td><td class="r">'+esc(km(r.km)||'—')+' → '+esc(km(r.proxCambio)||'—')+'</td><td class="r">'+monto(r)+'</td><td class="r"><button type="button" data-fe="'+i+'">✏️ Editar</button><button type="button" data-fs="'+i+'">🏷️ Sticker</button></td></tr>').join('')+
+   '</tbody></table></div></div></div>'+
+   '<div class="cl2-mf"><button type="button" class="cl2-btn pri" id="cl2-stk">🏷️ Sticker del último servicio</button><button type="button" class="cl2-btn" id="cl2-x2">Cerrar</button></div>';
+  ov.querySelector('#cl2-x').onclick=ov.querySelector('#cl2-x2').onclick=()=>ov.remove();
+  ov.querySelector('#cl2-stk').onclick=()=>generarYCompartirSticker(servicioDesdeResultadoCliente_(u));
+  ov.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>generarYCompartirSticker(servicioDesdeResultadoCliente_(regs[+b.dataset.fs])));
+  ov.querySelectorAll('[data-fe]').forEach(b=>b.onclick=()=>{const r=regs[+b.dataset.fe];ov.remove();abrirModalCliente(r)});
+}
+window.repintarClientesV19=()=>paintCli();
+window.recargarClientesV19=async()=>{await cargarClientesCache();paintCli()};
+// La búsqueda por servidor (placa o nombre parcial) ahora alimenta las tarjetas; el listado antiguo queda oculto.
+window.buscarClientes_=async function(q){
+  try{const d=await api('clientes',{placa:q});if(!d.ok)throw new Error();CL_RESULTADOS=d.registros;SRES=d.registros;SRES_Q=q;if(Q===q)paintCli()}
+  catch(e){$('cli-list').innerHTML='<div class="empty-note" style="grid-column:1/-1">No se pudo buscar (¿ya actualizaste el Apps Script?).</div>'}
+};
+$('cl-limpiar-busq').onclick=()=>{const i=$('cl-buscar-placa');i.value='';i.dispatchEvent(new Event('input'));i.focus()};
+$('cl-nuevo-veh').onclick=()=>{pServ.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('cl-placa').focus(),350)};
+$('cl-limpiar').onclick=()=>{['cl-placa','cl-nombre','cl-aceite','cl-cantidad','cl-filtroaceite','cl-filtroaire','cl-filtropetroleo','cl-observaciones','cl-km','cl-proxcambio'].forEach(id=>{const el=$(id);el.value='';if(el.classList.contains('cl-autofit'))ajustarTextoCuadro(el)});$('cl-fecha').value=hoyISO();SERVICIO_ORIGEN_NUMERO=null;$('cl-origen-msg').style.display='none';$('cl-msg').textContent=''};
 $('cli-acc').onclick=()=>{ALL=!ALL;paintCli()};
 async function cargar(){
   try{const [d]=await Promise.all([api('cotizaciones',{desde:isoLocal(new Date(Date.now()-30*86400000))}),cargarClientesCache()]);
@@ -4764,7 +4891,7 @@ async function cargar(){
   }catch(e){$('cqh-body').innerHTML='<div class="empty-note">No se pudo cargar: '+esc(e.message)+'</div>';return}
   paintCot();paintCli()}
 const g0=window.goView;window.goView=function(n){g0(n);if(n==='clientes')cargar()};
-$('cl-buscar-placa').addEventListener('input',e=>{Q=e.target.value.trim();$('cl-historial').style.display=Q?'':'none';paintCot();paintCli()});
+$('cl-buscar-placa').addEventListener('input',e=>{Q=e.target.value.trim();if(!Q){SRES=[];SRES_Q=''}paintCot();paintCli()});
 })();
 </script>
 
