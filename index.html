@@ -1948,46 +1948,123 @@ html[data-theme="dark"] .cl2-st.warn{color:#fbbf24}
   </div>
 </div>
 
+<style id="mx-css">
+/* ---------- Ventanas (modales): estilo unificado ---------- */
+.modal-overlay{ background:rgba(6,21,27,.62); backdrop-filter:blur(3px); }
+.modal-box{ border-radius:18px; border:1px solid var(--line); box-shadow:0 24px 60px rgba(0,0,0,.35); max-width:480px; }
+.modal-box.mx-wide{ max-width:700px; }
+.modal-head{ margin:-22px -22px 18px; padding:16px 22px; background:var(--paper); border-bottom:1px solid var(--line); gap:12px; position:sticky; top:-22px; z-index:2; }
+.modal-head small{ display:block; font-weight:500; font-size:11.5px; color:var(--text-dim); margin-top:2px; letter-spacing:0; }
+.mx-hl{ display:flex; align-items:center; gap:12px; min-width:0; }
+.mx-hl>div{ min-width:0; }
+.mx-ico{ width:38px; height:38px; flex:0 0 38px; border-radius:11px; background:var(--blue-s); color:var(--blue); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:18px; }
+.modal-x{ width:34px; height:34px; flex:0 0 34px; border-radius:50%; background:var(--card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; }
+.modal-x:hover{ background:var(--hover); }
+.mx-foot{ margin:18px -22px -22px; padding:14px 22px; border-top:1px solid var(--line); background:var(--paper); display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap; position:sticky; bottom:-22px; z-index:2; }
+.mx-foot .btn-primary{ width:auto; margin:0 !important; padding:11px 24px; }
+.mx-foot .btn-sm{ width:auto !important; margin:0 !important; padding:11px 18px; font-size:13px; }
+.mx-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+.mx-grid>*{ grid-column:1/-1; }
+.mx-grid>.field{ grid-column:auto; }
+.field.wide{ grid-column:1/-1 !important; }
+.mx-g2,.mx-g3{ display:grid; gap:0 16px; grid-column:1/-1; }
+.mx-g2{ grid-template-columns:1fr 1fr; }
+.mx-g3{ grid-template-columns:1fr 1fr 1fr; }
+.mx-g2>.field,.mx-g3>.field{ min-width:0; }
+.mx-sec{ grid-column:1/-1; display:flex; align-items:center; gap:7px; font-size:11px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--text-dim); margin:2px 0 12px; }
+.mx-sec:not(:first-child){ margin-top:8px; padding-top:16px; border-top:1px solid var(--soft-line); }
+.mx-calc{ grid-column:1/-1; display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; padding:14px 16px; border-radius:12px; border:1px solid var(--line); background:var(--blue-s); margin:4px 0 6px; }
+.mx-calc small{ display:block; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); font-weight:700; margin-bottom:3px; }
+.mx-calc .mx-ln{ font-size:12.5px; color:var(--text); display:flex; gap:14px; flex-wrap:wrap; }
+.mx-calc .mx-big{ font-size:22px; font-weight:800; color:var(--blue); text-align:right; }
+.mx-calc>div:first-child{ flex:1 1 320px; min-width:0; }
+.mx-calc>div:last-child{ flex:0 0 auto; text-align:right; }
+.mx-margen{ height:44px; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:0 14px; border-radius:8px; border:1.5px solid var(--line); background:var(--paper); font-size:12px; color:var(--text-dim); }
+.mx-margen b{ font-weight:800; font-size:13px; }
+.mx-margen.ok{ border-color:rgba(16,185,129,.4); background:rgba(16,185,129,.1); } .mx-margen.ok b{ color:var(--pos); }
+.mx-margen.bad{ border-color:rgba(244,63,94,.4); background:rgba(244,63,94,.1); } .mx-margen.bad b{ color:var(--neg); }
+.mx-note{ grid-column:1/-1; border-left:3px solid var(--blue); background:var(--paper); padding:11px 14px; border-radius:0 10px 10px 0; font-size:12px; line-height:1.5; color:var(--text-dim); margin:2px 0 4px; }
+.mx-stack{ display:flex; flex-direction:column; gap:10px; }
+.mx-chip{ display:inline-block; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11px; font-weight:800; letter-spacing:.05em; padding:2px 8px; border-radius:7px; border:1px solid var(--line); background:var(--card); color:var(--text); margin-left:6px; vertical-align:middle; }
+.mx-items{ border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--paper); }
+.mx-it{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:11px 14px; font-size:13px; border-bottom:1px solid var(--soft-line); }
+.mx-it:last-child{ border-bottom:0; }
+.mx-it>div{ display:flex; align-items:center; gap:10px; min-width:0; }
+.mx-it b{ font-weight:700; }
+.mx-q{ min-width:30px; text-align:center; padding:3px 6px; border-radius:7px; background:var(--card); border:1px solid var(--line); font-size:11px; font-weight:800; color:var(--blue); }
+.mx-info{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.mx-info>div{ border:1px solid var(--line); border-radius:12px; padding:10px 14px; background:var(--paper); }
+.mx-info span{ display:block; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-dim); font-weight:700; margin-bottom:3px; }
+.mx-info b{ font-size:13px; }
+.mx-tot{ display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-radius:12px; border:1px solid var(--line); background:var(--blue-s); font-weight:700; }
+.mx-tot b{ font-size:20px; color:var(--blue); }
+@media(max-width:600px){ .mx-grid,.mx-g2,.mx-g3,.mx-info{ grid-template-columns:1fr; } .mx-grid>.field{ grid-column:1/-1; } }
+/* Historial de cotizaciones (tabla) */
+.ct2-wrap{ overflow-x:auto; }
+.ct2-tab{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.ct2-tab th{ text-align:left; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); padding:11px 14px; border-bottom:1px solid var(--line); background:var(--paper); white-space:nowrap; }
+.ct2-tab td{ padding:13px 14px; border-bottom:1px solid var(--soft-line); vertical-align:middle; }
+.ct2-tab tbody tr:hover td{ background:var(--hover); }
+.ct2-tab .r{ text-align:right; white-space:nowrap; }
+.ct2-tab .fe{ color:var(--text-dim); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.ct2-cli b{ display:block; font-size:13px; }
+.ct2-cli span{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11.5px; font-weight:700; color:var(--text-dim); }
+.ct2-res{ max-width:300px; }
+.ct2-res p{ margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.ct2-res small{ color:var(--text-dim); font-size:11px; }
+.ct2-b{ display:inline-block; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; border:1px solid transparent; white-space:nowrap; }
+.ct2-b.ok{ color:var(--pos); background:rgba(16,185,129,.12); border-color:rgba(16,185,129,.3); }
+.ct2-b.sold{ color:var(--blue); background:var(--blue-s); border-color:var(--line); }
+.ct2-b.old{ color:var(--text-dim); background:var(--hover); border-color:var(--line); }
+.ct2-act{ display:flex; gap:6px; justify-content:center; }
+.ct2-act button{ padding:6px 12px; border-radius:9px; font-size:12px; font-weight:700; border:1.5px solid var(--line); background:var(--card); color:var(--text); cursor:pointer; white-space:nowrap; }
+.ct2-act button:hover{ background:var(--hover); }
+.ct2-act .pri{ background:var(--blue-s); color:var(--blue); border-color:var(--blue); }
+</style>
 <div id="cotventa-overlay" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-head"><span id="gv-titulo">Generar venta</span><button type="button" class="modal-x" id="gv-cerrar">&times;</button></div>
+    <div class="modal-head"><div class="mx-hl"><span class="mx-ico">🧾</span><div><span id="gv-titulo">Generar venta</span><small>Revisa los datos antes de registrar la venta</small></div></div><button type="button" class="modal-x" id="gv-cerrar">&times;</button></div>
     <div id="gv-cuerpo"></div>
     <div class="sale-msg" id="gv-msg"></div>
-    <button class="btn-primary" id="gv-confirmar" style="margin-top:6px;">Confirmar venta</button>
-    <button class="btn-primary" id="gv-sticker" style="margin-top:8px;display:none;background:transparent;color:var(--jade-deep);border:1.5px solid var(--jade);">Registrar servicio / sticker</button>
+    <div class="mx-foot">
+      <button class="btn-primary" id="gv-sticker" style="display:none;background:transparent;color:var(--jade-deep);border:1.5px solid var(--jade);">Registrar servicio / sticker</button>
+      <button class="btn-primary" id="gv-confirmar">Confirmar venta</button>
+    </div>
   </div>
 </div>
 <div id="cotdetalle-overlay" class="modal-overlay">
   <div class="modal-box">
-    <div class="modal-head"><span id="cd-titulo">Detalle de cotización</span><button type="button" class="modal-x" id="cd-cerrar">&times;</button></div>
+    <div class="modal-head"><div class="mx-hl"><span class="mx-ico">🧾</span><div><span id="cd-titulo">Detalle de cotización</span><small id="cd-sub"></small></div></div><button type="button" class="modal-x" id="cd-cerrar">&times;</button></div>
     <div id="cd-cuerpo"></div>
-    <button class="btn-primary" id="cd-cerrar2" type="button" style="margin-top:10px;background:transparent;color:var(--jade-deep);border:1.5px solid var(--jade);">Cerrar</button>
+    <div class="mx-foot"><span id="cd-acc" style="display:contents"></span><button class="btn-sm" id="cd-cerrar2" type="button">Cerrar</button></div>
   </div>
 </div>
 <div id="edit-modal-overlay" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-head"><span id="edit-modal-title">Editar</span><button type="button" class="modal-x" id="edit-modal-close">&times;</button></div>
-    <div id="edit-modal-body"></div>
+  <div class="modal-box mx-wide">
+    <div class="modal-head"><div class="mx-hl"><span class="mx-ico" id="edit-modal-ico">✏️</span><div><span id="edit-modal-title">Editar</span><small id="edit-modal-sub"></small></div></div><button type="button" class="modal-x" id="edit-modal-close">&times;</button></div>
+    <div id="edit-modal-body" class="mx-grid"></div>
     <div class="sale-msg" id="edit-modal-msg"></div>
-    <button class="btn-primary" id="edit-modal-save" style="margin-top:6px;">Guardar cambios</button>
-    <button type="button" class="btn-sm" id="edit-modal-cancel" style="display:none;width:100%;margin-top:8px;padding:10px;">Cancelar</button>
+    <div class="mx-foot">
+      <button type="button" class="btn-sm" id="edit-modal-cancel">Cancelar</button>
+      <button class="btn-primary" id="edit-modal-save">Guardar cambios</button>
+    </div>
   </div>
 </div>
-
 <div id="nuevo-prod-overlay" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-head"><span>Nuevo producto</span><button type="button" class="modal-x" id="nuevo-prod-close">&times;</button></div>
-    <div id="nuevo-prod-body">
+  <div class="modal-box mx-wide">
+    <div class="modal-head"><div class="mx-hl"><span class="mx-ico">📦</span><div><span>Nuevo producto</span><small>Registra un producto o servicio en el catálogo</small></div></div><button type="button" class="modal-x" id="nuevo-prod-close">&times;</button></div>
+    <div id="nuevo-prod-body" class="mx-grid">
       <div class="field"><label>Código</label><input type="text" id="np-codigo" autocomplete="off"><small id="np-codigo-hint"></small></div>
       <div class="field"><label>Tipo</label><select id="np-tipo"><option value="Producto">Producto</option><option value="Servicio">Servicio</option></select></div>
-      <div class="field"><label>Producto o servicio</label><input type="text" id="np-nombre"></div>
-      <div class="field"><label>Ubicación</label><input type="text" id="np-ubicacion"></div>
-      <div class="field"><label>Precio de compra</label><input type="number" step="0.01" id="np-preciocompra"></div>
-      <div class="field"><label>Precio de venta</label><input type="number" step="0.01" id="np-precioventa"></div>
-      <p style="margin:0 0 10px;color:var(--text-dim);font-size:11.5px;">El stock nace en 0. Si ya tienes unidades, regístralas después como una compra (así el kardex siempre cuadra con un movimiento real).</p>
+      <div class="field wide"><label>Producto o servicio</label><input type="text" id="np-nombre" placeholder="Ej. 10W-30 HX7 SHELL 4L"></div>
+      <div class="field"><label>Ubicación</label><input type="text" id="np-ubicacion" placeholder="Ej. Estante A-2 / Vitrina 1"></div>
+      <div class="field"><label>Precio de compra (S/)</label><input type="number" step="0.01" id="np-preciocompra" placeholder="0.00"></div>
+      <div class="field"><label>Precio de venta (S/)</label><input type="number" step="0.01" id="np-precioventa" placeholder="0.00"></div>
+      <div class="field"><label>Margen comercial</label><div class="mx-margen" id="np-margen"><span>Ganancia proyectada</span><b>S/ 0.00 (0.0%)</b></div></div>
+      <div class="mx-note">El stock nace en 0. Si ya tienes unidades, regístralas después como una compra (así el kardex siempre cuadra con un movimiento real).</div>
     </div>
     <div class="sale-msg" id="nuevo-prod-msg"></div>
-    <button class="btn-primary" id="nuevo-prod-guardar" style="margin-top:6px;">Crear producto</button>
+    <div class="mx-foot"><button class="btn-primary" id="nuevo-prod-guardar">+ Crear producto</button></div>
   </div>
 </div>
 
@@ -2034,8 +2111,23 @@ let editModalContext = null;
 document.getElementById('edit-modal-close').addEventListener('click', () => (window.cerrarEditProducto ? window.cerrarEditProducto() : editModalOverlay.classList.remove('show')));
 editModalOverlay.addEventListener('click', (e) => { if (e.target === editModalOverlay && !(editModalContext && editModalContext.tipo === 'producto')) editModalOverlay.classList.remove('show'); });
 
-function campoTexto(id, label, valor) {
-  return `<div class="field"><label>${label}</label><input type="text" id="${id}" value="${esc(valor ?? '')}"></div>`;
+function emHead(ico, titulo, sub) { editModalTitle.textContent = titulo; document.getElementById('edit-modal-ico').textContent = ico; document.getElementById('edit-modal-sub').textContent = sub || ''; }
+function mxBlk(ico, titulo, inner, cols) { return `<div class="mx-sec">${ico} ${titulo}</div><div class="${cols === 3 ? 'mx-g3' : 'mx-g2'}">${inner}</div>`; }
+function margenBoxHtml(id) { return `<div class="mx-margen" id="${id}"><span>Ganancia proyectada</span><b>S/ 0.00 (0.0%)</b></div>`; }
+function pintarMargen(idBox, compra, venta) {
+  const box = document.getElementById(idBox); if (!box) return;
+  compra = Number(compra) || 0; venta = Number(venta) || 0;
+  let cls = '', txt = 'S/ 0.00 (0.0%)';
+  if (compra > 0 && venta > compra) { cls = 'ok'; txt = '+S/ ' + (venta - compra).toFixed(2) + ' (' + (((venta - compra) / venta) * 100).toFixed(1) + '%)'; }
+  else if (compra > 0 && venta > 0) { cls = 'bad'; txt = 'Sin ganancia (0%)'; }
+  box.className = 'mx-margen' + (cls ? ' ' + cls : ''); box.querySelector('b').textContent = txt;
+}
+function bindMargen(idC, idV, idBox) {
+  const c = document.getElementById(idC), v = document.getElementById(idV), upd = () => pintarMargen(idBox, c.value, v.value);
+  c.addEventListener('input', upd); v.addEventListener('input', upd); upd();
+}
+function campoTexto(id, label, valor, wide) {
+  return `<div class="field${wide ? ' wide' : ''}"><label>${label}</label><input type="text" id="${id}" value="${esc(valor ?? '')}"></div>`;
 }
 function campoNumero(id, label, valor, step) {
   return `<div class="field"><label>${label}</label><input type="number" step="${step||'0.01'}" id="${id}" value="${valor ?? 0}"></div>`;
@@ -2050,44 +2142,61 @@ function listaProductosDatalist() {
 
 function abrirModalVenta(v) {
   editModalContext = { tipo: 'venta', fila: v.fila, huella: v.huella };
-  editModalTitle.textContent = 'Editar venta';
+  emHead('🧾', 'Editar venta', 'Modifica los detalles de la transacción de forma rápida');
   editModalMsg.textContent = '';
   editModalBody.innerHTML =
-    `<div class="field"><label>Fecha de la venta</label><input type="date" id="em-fecha" max="${hoyISO()}" value="${esc(v.fecha ? isoLocal(new Date(v.fecha)) : '')}"></div>` +
-    `<div class="field"><label>Código de producto</label><input type="text" id="em-codigo" value="${esc(v.codigo)}" list="em-productos-list">${listaProductosDatalist()}</div>` +
-    campoNumero('em-cantidad', 'Cantidad (admite decimales: 0.5, 1.25…)', v.cantidad, 'any') +
-    campoNumero('em-descuento', 'Descuento unitario (S/) — rebaja al cliente, 0 o más', v.descuentoUnit || 0) +
-    campoNumero('em-ajuste', 'Ajuste de precio unitario (S/) — + sube / − baja', v.ajusteUnit || 0) +
-    campoTexto('em-cliente', 'Cliente / Mecánico', v.cliente) +
-    campoSelect('em-estadopago', 'Estado de pago', ['Cobrado', 'Pendiente', 'Anulado'], v.estadoPago) +
-    campoSelect('em-comprobante', 'Tipo de comprobante', ['Nota de Venta / Sin Comprobante', 'Boleta', 'Factura'], v.tipoComprobante) +
-    campoSelect('em-metodopago', 'Método de pago', ['Efectivo', 'Yape', 'Transferencia'], v.metodoPago);
+    mxBlk('📦', 'Producto y servicio',
+      `<div class="field"><label>Fecha de la venta</label><input type="date" id="em-fecha" max="${hoyISO()}" value="${esc(v.fecha ? isoLocal(new Date(v.fecha)) : '')}"></div>` +
+      `<div class="field"><label>Código de producto</label><input type="text" id="em-codigo" value="${esc(v.codigo)}" list="em-productos-list">${listaProductosDatalist()}</div>` +
+      campoNumero('em-cantidad', 'Cantidad (admite decimales)', v.cantidad, 'any') +
+      campoTexto('em-cliente', 'Cliente / Mecánico', v.cliente)) +
+    mxBlk('🧮', 'Descuentos y modificadores de precio',
+      campoNumero('em-descuento', 'Descuento unitario (S/) — rebaja, 0 o más', v.descuentoUnit || 0) +
+      campoNumero('em-ajuste', 'Ajuste de precio unitario (S/) — + sube / − baja', v.ajusteUnit || 0)) +
+    mxBlk('💳', 'Estado y forma de pago',
+      campoSelect('em-estadopago', 'Estado de pago', ['Cobrado', 'Pendiente', 'Anulado'], v.estadoPago) +
+      campoSelect('em-comprobante', 'Tipo de comprobante', ['Nota de Venta / Sin Comprobante', 'Boleta', 'Factura'], v.tipoComprobante) +
+      campoSelect('em-metodopago', 'Método de pago', ['Efectivo', 'Yape', 'Transferencia'], v.metodoPago), 3) +
+    '<div class="mx-calc" id="em-calc"></div>';
   editModalOverlay.classList.add('show');
+  const base0 = Number(v.precioVentaNormal) || 0, cod0 = String(v.codigo || '').trim().toUpperCase();
+  const pintar = () => {
+    const cod = document.getElementById('em-codigo').value.trim().toUpperCase(), pr = PRODUCTOS.find(x => String(x.codigo).trim().toUpperCase() === cod);
+    const base = (cod !== cod0 && pr) ? (Number(pr.precioVenta) || 0) : base0;
+    const cant = numIn(document.getElementById('em-cantidad').value) || 0, d = numIn(document.getElementById('em-descuento').value) || 0, a = numIn(document.getElementById('em-ajuste').value) || 0;
+    const unit = base - d + a, total = round2(unit * cant);
+    document.getElementById('em-calc').innerHTML =
+      `<div><small>Resumen del recálculo</small><div class="mx-ln"><span>Precio base: <b>${fmt(base)}</b></span><span>Descuento: <b>−${fmt(d)}</b></span><span>Ajuste: <b>${a >= 0 ? '+' : '−'}${fmt(Math.abs(a))}</b></span><span>Precio final c/u: <b>${fmt(unit)}</b></span></div></div>` +
+      `<div><small style="text-align:right">Total neto estimado</small><div class="mx-big">${fmt(total)}</div></div>`;
+  };
+  ['em-codigo', 'em-cantidad', 'em-descuento', 'em-ajuste'].forEach(id => document.getElementById(id).addEventListener('input', pintar)); pintar();
 }
 function abrirModalCompra(c) {
   editModalContext = { tipo: 'compra', fila: c.fila, huella: c.huella };
-  editModalTitle.textContent = 'Editar compra / gasto';
+  emHead('🛒', 'Editar compra / gasto', 'Corrige el documento, los montos o la forma de pago');
   editModalMsg.textContent = '';
   const fechaISO = c.fecha ? isoLocal(new Date(c.fecha)) : '';
   editModalBody.innerHTML =
-    `<div class="field"><label>Fecha</label><input type="date" id="em-fecha" value="${esc(fechaISO)}"></div>` +
-    `<div class="field"><label>Código de producto (vacío si es un gasto)</label><input type="text" id="em-codigo" value="${esc(c.codigo || '')}" list="em-productos-list">${listaProductosDatalist()}</div>` +
-    campoNumero('em-cantidad', 'Cantidad', c.cantidad, '1') +
-    campoTexto('em-descripcion', 'Descripción', c.descripcion) +
-    (c.codigo ? '' : '') +
-    campoTexto('em-proveedor', 'Proveedor', c.proveedor) +
-    campoSelect('em-tipodoc', 'Tipo de Documento', ['Factura', 'Nota de Crédito', 'Sin documento'], c.tipoDocumento || 'Factura') +
-    campoTexto('em-docrelacionado', 'Documento relacionado (solo Nota de Crédito)', c.documentoRelacionado) +
-    campoTexto('em-comprobante', 'N° de comprobante', c.comprobante) +
-    campoSelect('em-moneda', 'Moneda', ['Soles', 'Dolares'], esDol(c.moneda) ? 'Dolares' : 'Soles') +
-    campoNumero('em-tc', 'Tipo de cambio comercial (si es Dólares)', c.tipoCambio || 1) +
-    campoNumero('em-tcsunat', 'TC SUNAT (si es Dólares)', c.tcSunat || '') +
-    campoNumero('em-monto', 'Monto original', c.montoOriginal) +
-    campoSelect('em-tipomov', 'Tipo de movimiento', ['Compra', 'Bonificación', 'Gasto', 'Anulado'], c.tipoMovimiento) +
+    mxBlk('📄', 'Documento',
+      `<div class="field"><label>Fecha</label><input type="date" id="em-fecha" value="${esc(fechaISO)}"></div>` +
+      `<div class="field"><label>Código de producto (vacío si es gasto)</label><input type="text" id="em-codigo" value="${esc(c.codigo || '')}" list="em-productos-list">${listaProductosDatalist()}</div>` +
+      campoNumero('em-cantidad', 'Cantidad', c.cantidad, '1') +
+      campoTexto('em-proveedor', 'Proveedor', c.proveedor) +
+      campoTexto('em-descripcion', 'Descripción', c.descripcion, true) +
+      campoSelect('em-tipodoc', 'Tipo de Documento', ['Factura', 'Nota de Crédito', 'Sin documento'], c.tipoDocumento || 'Factura') +
+      campoTexto('em-comprobante', 'N° de comprobante', c.comprobante) +
+      campoTexto('em-docrelacionado', 'Documento relacionado (solo Nota de Crédito)', c.documentoRelacionado, true)) +
+    mxBlk('💰', 'Moneda y montos',
+      campoSelect('em-moneda', 'Moneda', ['Soles', 'Dolares'], esDol(c.moneda) ? 'Dolares' : 'Soles') +
+      campoNumero('em-monto', 'Monto original', c.montoOriginal) +
+      campoNumero('em-tc', 'Tipo de cambio comercial (si es Dólares)', c.tipoCambio || 1) +
+      campoNumero('em-tcsunat', 'TC SUNAT (si es Dólares)', c.tcSunat || '')) +
     // V18.3: forma de pago / socio / plazo editables. Cambiar el socio o la forma de pago actualiza Compromiso y Socios (el backend lo sincroniza).
-    campoSelect('em-formapago', 'Forma de pago', ['Efectivo', 'Yape', 'Transferencia', 'Crédito Proveedor', 'Socio'], c.formaPago || 'Efectivo') +
-    `<div class="field" id="em-socio-wrap"><label>Socio que pagó</label><input type="text" id="em-socio" value="${esc(c.socio || '')}" placeholder="¿Qué socio pagó?"></div>` +
-    `<div class="field" id="em-plazo-wrap"><label>Plazo de pago</label>${plazoHtml_('em', true)}</div>`;
+    mxBlk('💳', 'Movimiento y forma de pago',
+      campoSelect('em-tipomov', 'Tipo de movimiento', ['Compra', 'Bonificación', 'Gasto', 'Anulado'], c.tipoMovimiento) +
+      campoSelect('em-formapago', 'Forma de pago', ['Efectivo', 'Yape', 'Transferencia', 'Crédito Proveedor', 'Socio'], c.formaPago || 'Efectivo') +
+      `<div class="field" id="em-socio-wrap"><label>Socio que pagó</label><input type="text" id="em-socio" value="${esc(c.socio || '')}" placeholder="¿Qué socio pagó?"></div>` +
+      `<div class="field wide" id="em-plazo-wrap"><label>Plazo de pago</label>${plazoHtml_('em', true)}</div>`);
   editModalOverlay.classList.add('show');
   const fpSel = document.getElementById('em-formapago');
   const updPago = () => {
@@ -2099,7 +2208,7 @@ function abrirModalCompra(c) {
 // Editar una conversión: se corrige LA MISMA fila (no se crea otra), así el Kardex recalcula el stock sin movimientos duplicados.
 function abrirModalConversion(c) {
   editModalContext = { tipo: 'conversion', fila: c.fila, huella: c.huella };
-  editModalTitle.textContent = 'Editar conversión';
+  emHead('🔄', 'Editar conversión', 'Se corrige la misma fila: el stock se recalcula solo');
   editModalMsg.textContent = '';
   editModalBody.innerHTML =
     `<div class="field"><label>Fecha</label><input type="date" id="em-fecha" max="${hoyISO()}" value="${esc(c.fecha ? isoLocal(new Date(c.fecha)) : '')}"></div>` +
@@ -2113,7 +2222,7 @@ function abrirModalConversion(c) {
 // V18: registrar pago (total o parcial) de un Compromiso de Pago.
 function abrirModalPagoCompromiso(c) {
   editModalContext = { tipo: 'pagoCompromiso', id: c.id };
-  editModalTitle.textContent = 'Registrar pago — ' + c.id;
+  emHead('💳', 'Registrar pago — ' + c.id, 'Pago total o parcial del compromiso');
   editModalMsg.textContent = '';
   editModalBody.innerHTML =
     `<div class="empty-note" style="font-size:12.5px;margin-bottom:6px;">${esc(c.beneficiario)} · Saldo pendiente: ${fmt(c.saldoPendiente)}</div>` +
@@ -2125,15 +2234,19 @@ function abrirModalPagoCompromiso(c) {
 }
 function abrirModalProducto(p) {
   editModalContext = { tipo: 'producto', fila: p.fila, huella: p.huella };
-  editModalTitle.textContent = 'Editar producto';
+  emHead('📦', 'Editar producto', 'Actualiza los datos del catálogo');
   editModalMsg.textContent = '';
   editModalBody.innerHTML =
-    `<div class="field"><label>Código (no se puede cambiar)</label><input type="text" value="${esc(p.codigo)}" disabled></div>` +
-    campoTexto('em-nombre', 'Nombre', p.nombre) +
-    campoTexto('em-ubicacion', 'Ubicación', p.ubicacion) +
-    campoNumero('em-preciocompra', 'Precio compra', p.precioCompra) +
-    campoNumero('em-precioventa', 'Precio venta', p.precioVenta);
+    mxBlk('📦', 'Datos del producto',
+      `<div class="field"><label>Código (no se puede cambiar)</label><input type="text" value="${esc(p.codigo)}" disabled></div>` +
+      campoTexto('em-ubicacion', 'Ubicación', p.ubicacion) +
+      campoTexto('em-nombre', 'Nombre', p.nombre, true)) +
+    mxBlk('💰', 'Precios y margen',
+      campoNumero('em-preciocompra', 'Precio de compra (S/)', p.precioCompra) +
+      campoNumero('em-precioventa', 'Precio de venta (S/)', p.precioVenta) +
+      `<div class="field wide"><label>Margen comercial</label>${margenBoxHtml('em-margen')}</div>`);
   editModalOverlay.classList.add('show');
+  bindMargen('em-preciocompra', 'em-precioventa', 'em-margen');
 }
 document.getElementById('edit-modal-save').addEventListener('click', async () => {
   if (!editModalContext) return;
@@ -3024,31 +3137,44 @@ function enlazarAccionesCotizacion(cont){
 function abrirDetalleCotizacion(numero){
   const cot = COTIZACIONES_CACHE.find(c => String(c.numero) === String(numero)) || COT_LISTA.find(c => String(c.numero) === String(numero));
   if (!cot) return;
-  document.getElementById('cd-titulo').textContent = 'Detalle — ' + (cot.numeroFormateado || ('Cotización ' + cot.numero));
-  const meta = [];
-  meta.push(`<div><b>Cliente:</b> ${esc(cot.clienteLimpio || cot.cliente || '—')}</div>`);
-  if (cot.placa) meta.push(`<div><b>Placa:</b> ${esc(cot.placa)}</div>`);
-  if (cot.fecha) meta.push(`<div><b>Fecha:</b> ${new Date(cot.fecha).toLocaleDateString('es-PE')}</div>`);
-  const estados = [];
-  estados.push(cot.ventaGenerada ? '✓ Venta generada' : 'Venta pendiente');
-  estados.push(servicioDeCotizacion(cot.numero) ? '✓ Servicio registrado' : 'Servicio sin registrar');
-  meta.push(`<div><b>Estado:</b> ${esc(estados.join(' · '))}</div>`);
+  const ea = t => esc(t).replace(/"/g, '&quot;'), cerrar = () => document.getElementById('cotdetalle-overlay').classList.remove('show');
+  const nombre = cot.clienteLimpio || cot.cliente || '—', servicio = servicioDeCotizacion(cot.numero);
+  document.getElementById('cd-titulo').innerHTML = esc(nombre) + (cot.placa ? '<span class="mx-chip">' + esc(cot.placa) + '</span>' : '');
+  document.getElementById('cd-sub').textContent = (cot.numeroFormateado || ('Cotización ' + cot.numero)) + (cot.fecha ? ' · emitida el ' + new Date(cot.fecha).toLocaleDateString('es-PE') : '');
   let lineas = '';
   if (cot.items && cot.items.length) {
-    lineas = cot.items.map(it => {
+    lineas = '<div class="mx-items">' + cot.items.map(it => {
       const cant = Number(it.cantidad) || 0, precio = Number(it.precio) || 0;
-      return `<div class="gv-item"><div>${esc(it.nombre)}<small>${fmtQty(cant)} × ${fmt(precio)}</small></div><div>${fmt(round2(cant * precio))}</div></div>`;
-    }).join('');
+      return `<div class="mx-it"><div><span class="mx-q">${fmtQty(cant)}x</span><b>${esc(it.nombre)}</b></div><div>${cant !== 1 ? `<small style="color:var(--text-dim)">${fmt(precio)} c/u</small>` : ''}<b>${fmt(round2(cant * precio))}</b></div></div>`;
+    }).join('') + '</div>';
   } else {
     // cotizaciones anteriores a la versión que guardaba el detalle por ítem: se muestra el texto guardado
     const segs = String(cot.detalle || cot.descripcion || '').split(';').map(t => t.trim()).filter(Boolean);
     lineas = segs.length
-      ? segs.map(t => `<div class="gv-item"><div>${esc(t)}</div></div>`).join('') + `<div class="gv-aviso">Cotización anterior: no guardó los precios por producto, solo el detalle y el total.</div>`
+      ? '<div class="mx-items">' + segs.map(t => `<div class="mx-it"><div><b>${esc(t)}</b></div></div>`).join('') + '</div><div class="mx-note" style="margin:0">Cotización anterior: no guardó los precios por producto, solo el detalle y el total.</div>'
       : '<div class="empty-note">Esta cotización no tiene detalle guardado.</div>';
   }
-  document.getElementById('cd-cuerpo').innerHTML =
-    `<div style="font-size:13px;line-height:1.6;margin-bottom:8px;">${meta.join('')}</div>` + lineas +
-    `<div class="gv-total"><span>Total</span><span>${fmt(cot.total)}</span></div>`;
+  const tel = String(cot.celular || cot.telefono || '').replace(/\D/g, ''), waTel = tel.length === 9 ? '51' + tel : tel;
+  document.getElementById('cd-cuerpo').innerHTML = '<div class="mx-stack">' +
+    '<div><div class="mx-sec" style="margin-bottom:8px">📦 Desglose de ítems</div>' + lineas + '</div>' +
+    '<div class="mx-info"><div><span>Venta</span><b>' + (cot.ventaGenerada ? '✓ Venta generada' : 'Pendiente de venta') + '</b></div><div><span>Servicio del vehículo</span><b>' + (servicio ? '✓ Registrado' : 'Sin registrar') + '</b></div></div>' +
+    '<div class="mx-tot"><span>Total cotizado</span><b>' + fmt(cot.total) + '</b></div></div>';
+  const acc = document.getElementById('cd-acc'), btn = (id, txt, cls) => `<button type="button" class="${cls || 'btn-sm'}" id="${id}">${txt}</button>`;
+  acc.innerHTML =
+    (waTel.length >= 9 ? btn('cd-wa', '💬 WhatsApp') : '') +
+    (servicio ? btn('cd-stk', '🏷️ Sticker') : btn('cd-srv', 'Registrar servicio')) +
+    (cot.ventaGenerada ? '' : btn('cd-venta', '🧾 Generar venta')) +
+    btn('cd-usar', 'Usar cotización', 'btn-primary');
+  const q = id => document.getElementById(id);
+  if (q('cd-wa')) q('cd-wa').onclick = () => {
+    const items = (cot.items || []).map(it => '• ' + (Number(it.cantidad) || 0) + ' x ' + it.nombre + ' — ' + fmt(round2((Number(it.cantidad) || 0) * (Number(it.precio) || 0)))).join('\n');
+    const msg = 'Hola ' + nombre + ', te comparto tu cotización ' + (cot.numeroFormateado || '') + ' de iMotor Care:\n\n' + (items ? items + '\n\n' : '') + 'Total: ' + fmt(cot.total) + '\n\n¡Quedamos atentos!';
+    window.open('https://wa.me/' + waTel + '?text=' + encodeURIComponent(msg), '_blank');
+  };
+  if (q('cd-stk')) q('cd-stk').onclick = () => { if (servicio) generarYCompartirSticker(servicio); };
+  if (q('cd-srv')) q('cd-srv').onclick = () => { cerrar(); prellenarServicioDesdeCotizacion(cot.numero); setTimeout(() => { const f = document.getElementById('cl-fecha'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250); };
+  if (q('cd-venta')) q('cd-venta').onclick = () => { cerrar(); abrirGenerarVenta(cot.numero); };
+  q('cd-usar').onclick = () => { cerrar(); prellenarServicioDesdeCotizacion(cot.numero); setTimeout(() => { const f = document.getElementById('cl-fecha'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250); };
   document.getElementById('cotdetalle-overlay').classList.add('show');
 }
 (function(){
@@ -3411,12 +3537,13 @@ document.getElementById('inv-nuevo-btn').addEventListener('click', () => {
   ['np-codigo','np-nombre','np-ubicacion','np-preciocompra','np-precioventa'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('np-tipo').value = 'Producto';
   document.getElementById('nuevo-prod-msg').textContent = '';
-  npCodigoEditado = false;
+  npCodigoEditado = false; pintarMargen('np-margen', 0, 0);
   document.getElementById('np-codigo').value = siguienteCodigoProducto(); validarCodigoNuevo();   // se muestra ANTES de guardar
   nuevoProdOverlay.classList.add('show');
   // Se relee el Inventario por si alguien creó productos desde Sheets u otro dispositivo; si no tocaste el código, se recalcula.
   cargarProductos().then(() => { if (!npCodigoEditado && nuevoProdOverlay.classList.contains('show')) { document.getElementById('np-codigo').value = siguienteCodigoProducto(); validarCodigoNuevo(); } });
 });
+bindMargen('np-preciocompra', 'np-precioventa', 'np-margen');
 document.getElementById('nuevo-prod-close').addEventListener('click', () => nuevoProdOverlay.classList.remove('show'));
 document.getElementById('nuevo-prod-guardar').addEventListener('click', async () => {
   const btn = document.getElementById('nuevo-prod-guardar');
@@ -3949,14 +4076,13 @@ document.getElementById('cp-guardar').addEventListener('click', async () => {
 // ================= V18: SOCIOS Y FINANCIAMIENTO =================
 let SC_HIST = {};
 const escA_ = t => esc(t).replace(/"/g,'&quot;');
-function scDialog_(titulo, cuerpo, okTxt, onOk){
+function scDialog_(titulo, cuerpo, okTxt, onOk, ico){
   const prev = document.getElementById('sc-dlg'); if (prev) prev.remove();
-  const o = document.createElement('div'); o.id = 'sc-dlg';
-  o.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:40px 12px;overflow:auto';
-  o.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:460px;width:100%;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.25)"><div style="font-weight:700;font-size:16px;margin-bottom:14px">'+titulo+'</div><div style="display:flex;flex-direction:column;gap:10px">'+cuerpo+'</div><div class="sale-msg" id="sc-dlg-msg" style="margin-top:10px"></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button type="button" class="btn-sm" id="sc-dlg-x">Cancelar</button><button type="button" class="btn-primary" id="sc-dlg-ok" style="width:auto;padding:10px 20px">'+okTxt+'</button></div></div>';
+  const o = document.createElement('div'); o.id = 'sc-dlg'; o.className = 'modal-overlay show';
+  o.innerHTML = '<div class="modal-box"><div class="modal-head"><div class="mx-hl"><span class="mx-ico">'+(ico||'✏️')+'</span><div><span>'+titulo+'</span></div></div><button type="button" class="modal-x" id="sc-dlg-x0">&times;</button></div><div class="mx-stack">'+cuerpo+'</div><div class="sale-msg" id="sc-dlg-msg"></div><div class="mx-foot"><button type="button" class="btn-sm" id="sc-dlg-x">Cancelar</button><button type="button" class="btn-primary" id="sc-dlg-ok">'+okTxt+'</button></div></div>';
   document.body.appendChild(o);
   o.addEventListener('click', e => { if (e.target === o) o.remove(); });
-  o.querySelector('#sc-dlg-x').onclick = () => o.remove();
+  o.querySelector('#sc-dlg-x').onclick = o.querySelector('#sc-dlg-x0').onclick = () => o.remove();
   const ok = o.querySelector('#sc-dlg-ok'), msg = o.querySelector('#sc-dlg-msg');
   ok.onclick = async () => { msg.textContent=''; msg.className='sale-msg'; ok.disabled = true;
     try { await onOk(o); o.remove(); } catch(err){ msg.textContent = err.message; msg.className = 'sale-msg err'; ok.disabled = false; } };
@@ -4268,7 +4394,7 @@ function servicioDesdeResultadoCliente_(r){
 }
 function abrirModalCliente(r) {
   editModalContext = { tipo: 'cliente', fila: r.fila, huella: r.huella };
-  editModalTitle.textContent = 'Editar ficha del vehículo';
+  emHead('🚗', 'Editar ficha del vehículo', 'Datos del servicio registrado');
   editModalMsg.textContent = '';
   editModalBody.innerHTML =
     `<div class="field"><label>Fecha</label><input type="date" id="em-fecha" value="${esc(r.fechaISO || '')}"></div>` +
@@ -4281,7 +4407,7 @@ function abrirModalCliente(r) {
     campoTexto('em-filtropetroleo', 'Filtro de petróleo', r.filtroPetroleo) +
     campoTexto('em-km', 'Kilometraje actual', r.km) +
     campoTexto('em-proxcambio', 'Próximo cambio (Km)', r.proxCambio) +
-    campoTexto('em-observaciones', 'Observaciones', r.observaciones);
+    campoTexto('em-observaciones', 'Observaciones', r.observaciones, true);
   editModalOverlay.classList.add('show');
 }
 // ---------------- EDITAR CONCILIACIÓN (TC SUNAT verificado a mano en SUNAT) ----------------
@@ -4293,7 +4419,7 @@ function calcFiscalConc_(g, tc){   // misma cuenta que la hoja: Base = ROUND(ROU
 }
 function abrirModalConciliacion(g) {
   editModalContext = { tipo: 'conciliacion', llave: g.llave };
-  editModalTitle.textContent = 'Editar conciliación';
+  emHead('🧮', 'Editar conciliación', 'TC SUNAT verificado a mano en SUNAT');
   editModalMsg.textContent = '';
   const tcActual = g.tcSunat ? String(g.tcSunat) : '';
   editModalBody.innerHTML =
@@ -4307,7 +4433,7 @@ function abrirModalConciliacion(g) {
       <div><span>Total comercial / fiscal actual</span><b>${fmt(g.totalComercial)} / ${fmt(g.totalSunat)}</b></div>
     </div>
     <p class="conc-nota">Escribe el <b>TC SUNAT</b> que verificaste en SUNAT para este comprobante. Solo se guarda en la conciliación; el comprobante original no se modifica.</p>
-    <div class="field"><label>TC SUNAT (S/ por US$)</label><input type="text" inputmode="decimal" id="em-tcconc" value="${esc(tcActual)}" placeholder="ej. 3.361" autocomplete="off"></div>
+    <div class="field wide"><label>TC SUNAT (S/ por US$)</label><input type="text" inputmode="decimal" id="em-tcconc" value="${esc(tcActual)}" placeholder="ej. 3.361" autocomplete="off"></div>
     <div class="conc-info" id="em-conc-prev"></div>`;
   const prev = () => {
     const tc = numIn(document.getElementById('em-tcconc').value), box = document.getElementById('em-conc-prev');
@@ -4500,7 +4626,7 @@ if(typeof renderFilaCotizacion==='function'){const o=window.renderFilaCotizacion
 /* 11. Cierre de caja (resumen del período que ya muestra Caja) */
 const cj=document.querySelector('#view-caja .topline');
 if(cj){const b=mk('<button type="button" class="btn-sm" id="x-cierre-btn">Cierre de caja</button>');cj.appendChild(b);
-  const mo=add('<div class="modal-overlay" id="x-cierre"><div class="modal-box"><div class="modal-head"><span>Cierre de caja</span><button type="button" class="modal-x" id="x-cierre-x">&times;</button></div><div id="x-cierre-b"></div><button type="button" class="btn-primary" id="x-cierre-s" style="margin-top:16px">Compartir resumen</button></div></div>');
+  const mo=add('<div class="modal-overlay" id="x-cierre"><div class="modal-box"><div class="modal-head"><div class="mx-hl"><span class="mx-ico">📊</span><div><span>Cierre de caja</span><small>Resumen del día listo para compartir</small></div></div><button type="button" class="modal-x" id="x-cierre-x">&times;</button></div><div id="x-cierre-b"></div><button type="button" class="btn-primary" id="x-cierre-s" style="margin-top:16px">Compartir resumen</button></div></div>');
   let txt='';
   b.onclick=()=>{try{const c=CJ_DATA,r=c.resumen;const rows=[['Ventas totales',fmt(r.ventasTotales)],['Efectivo',fmt(r.efectivo)],['Yape',fmt(r.yape)]].concat((r.otros||[]).map(o=>[o.metodo,fmt(o.total)])).concat([['N.º de ventas',String(r.numVentas)]]);
     $('x-cierre-b').innerHTML='<div class="when" style="color:var(--text-dim);margin-bottom:8px">'+(c.tipo==='todo'?'Desde la primera venta':c.label)+'</div>'+rows.map(x=>'<div class="x-cr"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
@@ -4800,19 +4926,26 @@ $('cl-buscar-placa').placeholder='Buscar por Placa, Nombre de Cliente o Celular.
 $('cl-historial').style.display='none';
 vc.appendChild(pBus);vc.appendChild(pServ);pRec.style.display='none';vc.appendChild(pRec);
 const pH=document.createElement('div');pH.className='panel';
-pH.innerHTML='<div class="panel-head">Historial de cotizaciones recientes</div><div class="panel-body" style="padding:8px 10px;overflow-x:auto" id="cqh-body"><div class="empty-note">Cargando…</div></div>';
-vc.appendChild(pH);
+pH.innerHTML='<div class="panel-head cl2-list-head"><span>Historial de cotizaciones recientes</span><small id="cqh-count"></small></div><div class="panel-body ct2-wrap" style="padding:0" id="cqh-body"><div class="empty-note">Cargando…</div></div>';
 const pCli=document.createElement('div');pCli.className='panel';
 pCli.innerHTML='<div class="panel-head cl2-list-head"><span>Vehículos y clientes registrados</span><small id="cli-count"></small></div><div class="panel-body cl2-cards" id="cli-list"><div class="empty-note">Cargando…</div></div><button type="button" class="cl-acc" id="cli-acc" style="display:none"></button>';
-vc.appendChild(pCli);
+vc.appendChild(pCli);vc.appendChild(pH);
 let Q='',ALL=false,RECS=[];
 const hay=(...v)=>nrm(v.join(' ')).includes(nrm(Q));
 const desc=c=>(c.items&&c.items.length?c.items.map(i=>i.nombre).join(', '):(c.descripcion||'—'));
+const CT_DIAS_VIGENCIA=15;   // una cotización sin venta se considera "Vencida" después de 15 días
+function estadoCot(c){
+  if(c.ventaGenerada)return{k:'sold',t:'✓ Vendida'};
+  const d=Math.floor((Date.now()-new Date(c.fecha).getTime())/86400000);
+  return d>CT_DIAS_VIGENCIA?{k:'old',t:'Vencida'}:{k:'ok',t:'● Vigente'}}
 function paintCot(){
-  const L=RECS.filter(c=>!Q||hay(c.numeroFormateado,c.cliente,c.clienteLimpio,c.placa,c.celular,c.telefono)).slice(0,Q?50:15),cont=$('cqh-body');
-  cont.innerHTML=L.length?'<table class="cot-tab"><thead><tr><th>Fecha</th><th>Cliente</th><th>Descripción</th><th>Monto (S/)</th><th></th></tr></thead><tbody>'+L.map(c=>'<tr><td>'+new Date(c.fecha).toLocaleDateString('es-PE')+'</td><td>'+esc(c.clienteLimpio||c.cliente||'—')+'</td><td class="dsc">'+esc(desc(c))+'</td><td>'+fmt(c.total)+'</td><td><button type="button" class="btn-mini" data-u="'+esc(String(c.numero))+'">Usar</button> <button type="button" class="btn-mini" data-v="'+esc(String(c.numero))+'">Ver</button></td></tr><tr class="det" style="display:none"><td colspan="5">'+renderFilaCotizacion(c)+'</td></tr>').join('')+'</tbody></table>':'<div class="empty-note">Sin cotizaciones.</div>';
+  const T=RECS.filter(c=>!Q||hay(c.numeroFormateado,c.cliente,c.clienteLimpio,c.placa,c.celular,c.telefono)),L=T.slice(0,Q?50:15),cont=$('cqh-body');
+  $('cqh-count').textContent=T.length?(L.length<T.length?'Mostrando '+L.length+' de '+T.length+' cotizaciones':T.length+' cotización'+(T.length===1?'':'es')):'';
+  cont.innerHTML=L.length?'<table class="ct2-tab"><thead><tr><th>Fecha</th><th>Cliente / Placa</th><th>Resumen del combo</th><th>Estado</th><th class="r">Monto</th><th style="text-align:center">Acciones</th></tr></thead><tbody>'+L.map(c=>{
+    const it=c.items||[],resumen=it.length?it.map(i=>i.nombre).join(' + '):String(c.descripcion||c.detalle||'—'),n=it.length||String(c.detalle||c.descripcion||'').split(';').filter(x=>x.trim()).length,st=estadoCot(c);
+    return '<tr><td class="fe">'+new Date(c.fecha).toLocaleDateString('es-PE')+'</td><td><div class="ct2-cli"><b>'+esc(c.clienteLimpio||c.cliente||'—')+'</b><span>'+esc(c.placa||'Sin placa')+'</span></div></td><td class="ct2-res"><p title="'+eH(resumen)+'">'+esc(resumen)+'</p><small>'+n+' producto'+(n===1?'':'s')+' cotizado'+(n===1?'':'s')+'</small></td><td><span class="ct2-b '+st.k+'">'+st.t+'</span></td><td class="r"><b>'+fmt(c.total)+'</b></td><td><div class="ct2-act"><button type="button" class="pri" data-u="'+esc(String(c.numero))+'">Usar</button><button type="button" data-v="'+esc(String(c.numero))+'">👁 Ver</button></div></td></tr>'}).join('')+'</tbody></table>':'<div class="empty-note" style="padding:24px">Sin cotizaciones.</div>';
   cont.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{prellenarServicioDesdeCotizacion(b.dataset.u);pServ.scrollIntoView({behavior:'smooth'})});
-  cont.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const d=b.closest('tr').nextElementSibling,on=d.style.display==='none';d.style.display=on?'':'none';if(on&&!d.dataset.b){d.dataset.b=1;enlazarAccionesCotizacion(d)}})}
+  cont.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>abrirDetalleCotizacion(b.dataset.v))}
 // ---- Vehículos: una tarjeta por placa (semáforo según días desde la última atención) + ficha con todo el historial ----
 const CL_DIAS_ALERTA=120, CL_DIAS_VENCIDO=180;   // ≤120 días: al día · 121–180: próximo a cambio · >180: cambio vencido (el sistema guarda Km del servicio, no el odómetro actual)
 const eH=t=>escA_(t), ymd=r=>String((r&&r.fechaISO)||'').slice(0,10);
